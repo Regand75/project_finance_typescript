@@ -1,0 +1,115 @@
+.main-filter {
+    margin-bottom: 116px;
+    gap: 20px;
+}
+
+.main-filter-block:has(button) {
+    width: 100px;
+}
+
+.chart-income-block {
+    max-width: 610px;
+}
+
+.chart-income-title {
+    margin-bottom: 20px;
+}
+
+.chart-income {
+    padding: 0 60px 40px 60px;
+    max-width: 610px;
+}
+
+.chart-expenses-block {
+    max-width: 610px;
+}
+
+.chart-expenses-title {
+    margin-bottom: 20px;
+}
+
+.chart-expenses {
+    padding: 0 60px 40px 60px;
+    max-width: 610px;
+}
+
+.incomes-container, .expenses-container {
+    gap: 20px;
+}
+
+.income-block, .expense-block {
+    width: 350px;
+    padding: 20px;
+}
+
+.income-title, .expense-title {
+    margin-bottom: 10px;
+}
+
+.income-title-text, .expense-title-text {
+    font-family: 'Roboto-Medium', sans-serif;
+    font-size: 28px;
+    line-height: 33px;
+    color: #290661;
+}
+
+.income-active, .expense-active {
+    gap: 10px;
+}
+
+.income-active button,
+.expense-active button {
+    font-family: 'Roboto-Medium', sans-serif;
+    font-size: 14px;
+    line-height: 16px;
+    text-align: center;
+}
+
+.income-block-adding, .expense-block-adding {
+    width: 350px;
+    padding: 48px;
+}
+
+.creating-income-active,
+.edit-income-active,
+.creating-expense-active,
+.edit-expense-active,
+.operations-active,
+.operation-creating-active,
+.operation-edit-active {
+    gap: 10px;
+}
+
+.operations-active {
+    margin-bottom: 40px;
+}
+
+.operations-filter {
+    margin-bottom: 40px;
+    gap: 20px;
+}
+
+.filter-button:not(.btn-secondary):hover {
+    background-color: #6C757D10;
+}
+
+.operations-filter-block:has(button) {
+    width: 100px;
+}
+
+.table .table-font-custom {
+    font-family: 'Roboto-Bold', sans-serif;
+    font-size: 16px;
+    line-height: 19px;
+    color: #052C65;
+}
+
+.container .input-group {
+    width: 397px;
+}
+
+.input-group {
+    margin-bottom: 10px;
+}
+
+

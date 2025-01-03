@@ -1,0 +1,91 @@
+<div class="operations">
+    <section class="operations ms-custom-section">
+        <div class="container pb-3">
+            <div class="operations-title-block title-block mx-xl-5">
+                <h1 class="operations-title title">Доходы и расходы</h1>
+            </div>
+            <div class="operations-active d-flex mx-xl-5">
+                <button class="btn btn-success btn-custom" type="button" id="creating-income">Создать доход</button>
+                <button class="btn btn-danger btn-custom" type="button" id="creating-expense">Создать расход</button>
+            </div>
+            <div class="operations-filter d-flex flex-row flex-wrap align-items-center mx-xl-5" id="filters-container">
+                <div class="operations-filter-block">
+                    <button class="filter-button btn btn-secondary border-secondary w-100" type="button"
+                            id="operations-button-today" data-period="today">Сегодня
+                    </button>
+                </div>
+                <div class="operations-filter-block">
+                    <button class="filter-button btn border-secondary w-100" type="button"
+                            id="operations-button-week" data-period="week">
+                        Неделя
+                    </button>
+                </div>
+                <div class="operations-filter-block">
+                    <button class="filter-button btn border-secondary w-100" type="button"
+                            id="operations-button-month" data-period="month">
+                        Месяц
+                    </button>
+                </div>
+                <div class="operations-filter-block">
+                    <button class="filter-button btn border-secondary w-100" type="button"
+                            id="operations-button-year" data-period="year">Год
+                    </button>
+                </div>
+                <div class="operations-filter-block">
+                    <button class="filter-button btn border-secondary w-100" type="button" id="operations-button-all"
+                            data-period="all">
+                        Все
+                    </button>
+                </div>
+                <div class="operations-filter-block">
+                    <button class="filter-button btn border-secondary w-100" type="button"
+                            id="operations-button-interval" data-period="interval">
+                        Интервал
+                    </button>
+                </div>
+                <div class="d-flex filter-interval-hidden" id="filter-block">
+                    <div class="operations-filter-block">
+                        <span>с</span>
+                    </div>
+                    <div class="operations-filter-block filter-block me-2">
+                        <input type="text" name="date-from" placeholder="Дата" id="date-from">
+                    </div>
+                    <div class="operations-filter-block">
+                        <span>по</span>
+                    </div>
+                    <div class="operations-filter-block filter-block">
+                        <input type="text" name="date-to" placeholder="Дата" id="date-to">
+                    </div>
+                </div>
+            </div>
+            <div class="operations-table mx-xl-5 table-responsive">
+                <table class="table table-hover text-center">
+                    <thead>
+                    <tr>
+                        <th class="table-font-custom text-nowrap" scope="col">№ операции</th>
+                        <th class="table-font-custom" scope="col">Тип</th>
+                        <th class="table-font-custom" scope="col">Категория</th>
+                        <th class="table-font-custom" scope="col">Сумма</th>
+                        <th class="table-font-custom" scope="col">Дата</th>
+                        <th class="table-font-custom" scope="col">Комментарий</th>
+                        <th class="table-font-custom" scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="records">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-window border border-light rounded-4 m-3">
+            <p class="modal-text">Вы действительно хотите удалить операцию?</p>
+            <div class="modal-active d-flex justify-content-center">
+                <button class="btn btn-success btn-custom" id="modal-delete" type="button">Да, удалить</button>
+                <button class="btn btn-danger btn-custom" id="no-delete" type="button">Не удалять</button>
+            </div>
+        </div>
+    </div>
+</div>

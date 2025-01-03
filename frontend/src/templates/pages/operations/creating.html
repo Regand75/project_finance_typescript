@@ -1,0 +1,43 @@
+<section class="operations-creating ms-custom-section">
+    <div class="container min-vh-100">
+        <div class="operation-creating-title-block title-block mx-xl-5">
+            <h1 class="operation-creating-title title">Создание дохода/расхода</h1>
+        </div>
+        <div class="operation-creating-container mx-xl-5 pb-3">
+            <div class="operation-creating-block w-100">
+                <select class="form-control input-custom text-dark" name="type" id="typeSelect">
+                    <option value="income">Доход</option>
+                    <option value="expense">Расход</option>
+                </select>
+                <select class="form-control input-custom text-dark" name="category" id="categorySelect">
+                </select>
+                <div class="input-group has-validation">
+                    <input class="form-control input-custom text-dark mb-0" type="text" id="amount"
+                           placeholder="Сумма в $..." required>
+                    <div class="invalid-feedback">
+                        Введите числовое значение
+                    </div>
+                </div>
+                <div class="input-group has-validation">
+                    <input class="form-control input-custom text-dark mb-0" type="text" id="date" placeholder="Дата..."
+                           required>
+                    <div class="invalid-feedback">
+                        Введите дату в формате дд.мм.гггг
+                    </div>
+                </div>
+                <div class="input-group has-validation">
+                    <input class="form-control input-custom text-dark" type="text" id="comment"
+                           placeholder="Комментарий...">
+                    <div class="invalid-feedback">
+                        Напишите комментарий
+                    </div>
+                </div>
+                <div class="operation-creating-active d-flex mt-3">
+                    <button class="btn btn-success btn-custom" type="button" id="operation-creating" disabled>Создать
+                    </button>
+                    <button class="btn btn-danger btn-custom button-back" type="button" id="button-back">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
