@@ -1,5 +1,5 @@
-import {AuthUtils} from "../../utils/auth-utils.js";
-import {AuthService} from "../../services/auth-service.js";
+import {AuthUtils} from "../../utils/auth-utils.ts";
+import {AuthService} from "../../services/auth-service";
 
 export class Form {
     constructor(page) {

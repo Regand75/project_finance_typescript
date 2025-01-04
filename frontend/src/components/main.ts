@@ -1,5 +1,6 @@
-import {OperationsService} from "../services/operations-service.js";
-import {FilterUtils} from "../utils/filter-utils.js";
+import {OperationsService} from "../services/operations-service";
+import {FilterUtils} from "../utils/filter-utils.ts";
+import {OperationsResponseType} from "../types/operations-response.type";
 
 export class Main {
     constructor() {
@@ -67,7 +68,7 @@ export class Main {
         FilterUtils.initializeDatepickers();
     }
 
-    async getOperations(period) {
+    private async getOperations(period): Promise<void> {
         try {
             const operationsResult = await OperationsService.getOperations(`?period=${period}`);
             if (operationsResult && operationsResult.length > 0) {
@@ -85,7 +86,7 @@ export class Main {
         }
     }
 
-    updateCharts(operationsResult) {
+    updateCharts(operationsResult: OperationsResponseType): void {
         const incomeCategories = {};
         const expenseCategories = {};
 

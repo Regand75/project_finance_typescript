@@ -1,5 +1,5 @@
-import {HttpUtils} from "../utils/http-utils.js";
-import config from "../../config/config.js";
+import {HttpUtils} from "../utils/http-utils.ts";
+import config from "../../config/config.ts";
 
 export class AuthService {
 

@@ -1,4 +1,4 @@
-import {BalanceService} from "../services/balance-service.js";
+import {BalanceService} from "../services/balance-service";
 
 export class Balance {
     constructor() {

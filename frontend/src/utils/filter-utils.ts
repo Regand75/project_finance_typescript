@@ -1,23 +1,25 @@
-import {OperationsService} from "../services/operations-service.js";
+import {OperationsService} from "../services/operations-service";
+import 'bootstrap-datepicker';
+import {OperationsResponseType} from "../types/operations-response.type";
 
 export class FilterUtils {
 
-    static initializeDatepickers() {
-        $('#date-from').datepicker({
+    public static initializeDatepickers(): void {
+        ($('#date-from') as any).datepicker({
             format: 'dd.mm.yyyy',
             autoclose: 'off',
             todayHighlight: true,
             language: 'ru',
         });
 
-        $('#date-to').datepicker({
+        ($('#date-to') as any).datepicker({
             format: 'dd.mm.yyyy',
             autoclose: 'off',
             todayHighlight: true,
             language: 'ru',
         });
 
-        $('#date').datepicker({
+        ($('#date') as any).datepicker({
             format: 'dd.mm.yyyy',
             autoclose: true,
             todayHighlight: true,
@@ -25,35 +27,46 @@ export class FilterUtils {
         });
     }
 
-    static convertDate(dateString) {
+    private static convertDate(dateString): string {
         // Разделяем строку по точке
-        const [day, month, year] = dateString.split('.');
+        const [day, month, year]: [string, string, string] = dateString.split('.');
         // Возвращаем дату в формате год-месяц-день
         return `${year}-${month}-${day}`;
     }
 
-    static async handleFilterClick(event, showRecords = null, updateChart = null) {
-        const target = event.target.closest('button[data-period]');
-        const filterIntervalHiddenElement = document.getElementById('filter-block');
+    public static async handleFilterClick(event: MouseEvent, showRecords: void | null = null, updateChart: void | null = null): Promise<void> {
+        const target: Element | null = (event.target as Element).closest('button[data-period]');
+        const filterIntervalHiddenElement: HTMLElement | null = document.getElementById('filter-block');
         if (target) {
             document.querySelectorAll('button[data-period]').forEach(btn => btn.classList.remove('btn-secondary'));
             target.classList.add('btn-secondary');
-            filterIntervalHiddenElement.classList.add('filter-interval-hidden');
-
-            const period = target.getAttribute('data-period');
+            if (filterIntervalHiddenElement) {
+                filterIntervalHiddenElement.classList.add('filter-interval-hidden');
+            }
+            const period: string = target.getAttribute('data-period');
 
             if (period === 'interval') {
-                const inputDateFromValue = document.getElementById('date-from').value;
-                const inputDateToValue = document.getElementById('date-to').value;
-                filterIntervalHiddenElement.classList.remove('filter-interval-hidden');
+                let inputDateFromValue: string | null = null;
+                let inputDateToValue: string | null = null;
+                const inputDateFrom: HTMLElement | null = document.getElementById('date-from');
+                if (inputDateFrom instanceof HTMLInputElement) {
+                    inputDateFromValue = inputDateFrom.value;
+                }
+                const inputDateTo: HTMLElement | null = document.getElementById('date-to');
+                if (inputDateTo instanceof HTMLInputElement) {
+                    inputDateToValue = inputDateTo.value;
+                }
+                if (filterIntervalHiddenElement) {
+                    filterIntervalHiddenElement.classList.remove('filter-interval-hidden');
+                }
 
                 if (!inputDateFromValue && !inputDateToValue) {
                     // Обновление данных при выборе дат
-                    const updateIntervalData = async () => {
-                        const dateFromValue = $('#date-from').datepicker('getDate'); // Получаем дату
-                        const dateToValue = $('#date-to').datepicker('getDate');
+                    const updateIntervalData = async (): Promise<void> => {
+                        const dateFromValue: Date | null = $('#date-from').datepicker('getDate'); // Получаем дату
+                        const dateToValue: Date | null = $('#date-to').datepicker('getDate');
                         if (dateFromValue && dateToValue) {
-                            const convertedFrom = this.convertDate(
+                            const convertedFrom: string = this.convertDate(
                                 dateFromValue.toLocaleDateString('ru-RU',
                                     {
                                         day: '2-digit',
@@ -61,7 +74,7 @@ export class FilterUtils {
                                         year: 'numeric'
                                     })
                             );
-                            const convertedTo = this.convertDate(
+                            const convertedTo: string = this.convertDate(
                                 dateToValue.toLocaleDateString('ru-RU',
                                     {
                                         day: '2-digit',
@@ -71,19 +84,21 @@ export class FilterUtils {
                             );
                             try {
                                 // Обновляем запрос с параметрами дат
-                                const operationsResult = await OperationsService.getOperations(
+                                const operationsResult: OperationsResponseType = await OperationsService.getOperations(
                                     `?period=${period}&dateFrom=${convertedFrom}&dateTo=${convertedTo}`
                                 );
-                                if (operationsResult) {
+                                // Проверяем, является ли результат ошибкой
+                                if ('error' in operationsResult && operationsResult.error) {
+                                    console.error('Error:', operationsResult.message);
+                                    location.href = '#/';
+                                } else {
+                                    // Здесь operationsResult гарантированно является OperationsSuccessResponse[]
                                     if (showRecords) {
                                         showRecords(operationsResult); // Обновляем записи
                                     }
                                     if (updateChart) {
                                         updateChart(operationsResult); // Обновляем графики
                                     }
-                                } else if (operationsResult.error) {
-                                    console.log(operationsResult.error);
-                                    location.href = '#/';
                                 }
 
                             } catch (error) {
@@ -96,22 +111,24 @@ export class FilterUtils {
                     $('#date-to').off('changeDate').on('changeDate', updateIntervalData);
                 } else if (inputDateFromValue && inputDateToValue) {
                     try {
-                        const convertedFromValue = this.convertDate(inputDateFromValue);
-                        const convertedToValue = this.convertDate(inputDateToValue);
+                        const convertedFromValue: string = this.convertDate(inputDateFromValue);
+                        const convertedToValue: string = this.convertDate(inputDateToValue);
                         // Обновляем запрос с параметрами дат
-                        const operationsResult = await OperationsService.getOperations(
+                        const operationsResult: OperationsResponseType = await OperationsService.getOperations(
                             `?period=${period}&dateFrom=${convertedFromValue}&dateTo=${convertedToValue}`
                         );
-                        if (operationsResult) {
+                        // Проверяем, является ли результат ошибкой
+                        if ('error' in operationsResult && operationsResult.error) {
+                            console.error('Error:', operationsResult.message);
+                            location.href = '#/';
+                        } else {
+                            // Здесь operationsResult гарантированно является OperationsSuccessResponse[]
                             if (showRecords) {
                                 showRecords(operationsResult); // Обновляем записи
                             }
                             if (updateChart) {
                                 updateChart(operationsResult); // Обновляем графики
                             }
-                        } else if (operationsResult.error) {
-                            console.log(operationsResult.error);
-                            location.href = '#/';
                         }
                     } catch (error) {
                         console.log(error);
@@ -119,17 +136,19 @@ export class FilterUtils {
                 }
             } else {
                 try {
-                    const operationsResult = await OperationsService.getOperations(`?period=${period}`);
-                    if (operationsResult) {
+                    const operationsResult: OperationsResponseType = await OperationsService.getOperations(`?period=${period}`);
+                    // Проверяем, является ли результат ошибкой
+                    if ('error' in operationsResult && operationsResult.error) {
+                        console.error('Error:', operationsResult.message);
+                        location.href = '#/';
+                    } else {
+                        // Здесь operationsResult гарантированно является OperationsSuccessResponse[]
                         if (showRecords) {
                             showRecords(operationsResult); // Обновляем записи
                         }
                         if (updateChart) {
                             updateChart(operationsResult); // Обновляем графики
                         }
-                    } else if (operationsResult.error) {
-                        console.log(operationsResult.error);
-                        location.href = '#/';
                     }
                 } catch (error) {
                     console.log(error);

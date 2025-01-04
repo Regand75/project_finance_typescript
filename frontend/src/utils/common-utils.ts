@@ -1,21 +1,21 @@
 export class CommonUtils {
 
     // конвертируем дату в формат yyyy-mm-dd
-    static convertDate(dateString) {
-        const [day, month, year] = dateString.split('.');
+    public static convertDate(dateString: string): string {
+        const [day, month, year]: [string, string, string] = dateString.split('.');
         return `${year}-${month}-${day}`;
     }
 
-    static initBackButton(buttonSelector = '.button-back') {
-        const backButton = document.querySelector(buttonSelector);
+    public static initBackButton(buttonSelector: string = '.button-back'): void {
+        const backButton: HTMLElement | null = document.querySelector(buttonSelector);
         if (backButton) {
-            backButton.addEventListener('click', () => {
+            backButton.addEventListener('click', (): void => {
                 window.history.back();
             });
         }
     }
 
-    static generateGridToolsColumn(entity, id) {
+    public static generateGridToolsColumn(entity: string, id: number): string {
         return `<div class="${entity}-tools">
                     <a href="#/${entity}/delete?id=${id}" class="${entity}-delete">
                         <!-- Иконка удаления -->

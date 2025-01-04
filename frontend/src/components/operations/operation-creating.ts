@@ -1,6 +1,6 @@
-import {OperationsService} from "../../services/operations-service.js";
-import {CommonUtils} from "../../utils/common-utils.js";
-import {FilterUtils} from "../../utils/filter-utils.js";
+import {OperationsService} from "../../services/operations-service";
+import {CommonUtils} from "../../utils/common-utils.ts";
+import {FilterUtils} from "../../utils/filter-utils.ts";
 
 export class OperationCreating {
     constructor(parseHash) {

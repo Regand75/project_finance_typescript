@@ -1,5 +1,5 @@
-import {OperationsService} from "../../services/operations-service.js";
-import {ModalManager} from "../modal.js";
+import {OperationsService} from "../../services/operations-service";
+import {ModalManager} from "../modal";
 
 export class OperationDelete {
     constructor(parseHash) {

@@ -1,17 +1,20 @@
-import {HttpUtils} from "../utils/http-utils.js";
-import config from "../../config/config.js";
+import {HttpUtils} from "../utils/http-utils";
+import config from "../../config/config";
+import {OperationsResponseType} from "../types/operations-response.type";
+import {ResultRequestType} from "../types/result-request.type";
 
 export class OperationsService {
 
-    static async getOperations(params = '') {
-        const result = await HttpUtils.request(config.host + '/operations' + params);
+    public static async getOperations(params: string = ''): Promise<OperationsResponseType> {
+        const result: ResultRequestType<OperationsResponseType> = await HttpUtils.request<OperationsResponseType>(config.host + '/operations' + params);
         if (result.redirect || result.error || !result.response) {
-            return alert('Возникла ошибка при запросе операций. Обратитесь в поддержку');
+            alert('Возникла ошибка при запросе операций. Обратитесь в поддержку');
+            return;
         }
         return result.response;
     }
 
-    static async getOperation(params = '') {
+    public static async getOperation(params: string = ''): Promise<any>  {
         const result = await HttpUtils.request(config.host + '/operations' + params);
         if (result.redirect || result.error || !result.response) {
             return alert('Возникла ошибка при запросе операции. Обратитесь в поддержку');

@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "http-server"
+    "build": "tsc",
+    "start": "npm run build && http-server dist"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,9 @@
     "jquery": "^3.7.1"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "@types/bootstrap-datepicker": "^1.10.0",
+    "@types/jquery": "^3.5.32",
+    "http-server": "^14.1.1",
+    "typescript": "^5.7.2"
   }
 }

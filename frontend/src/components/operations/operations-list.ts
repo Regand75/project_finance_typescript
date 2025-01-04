@@ -1,6 +1,7 @@
-import {OperationsService} from "../../services/operations-service.js";
-import {FilterUtils} from "../../utils/filter-utils.js";
-import {CommonUtils} from "../../utils/common-utils.js";
+import {OperationsService} from "../../services/operations-service";
+import {FilterUtils} from "../../utils/filter-utils.ts";
+import {CommonUtils} from "../../utils/common-utils.ts";
+import {OperationsResponseType} from "../../types/operations-response.type";
 
 export class OperationsList {
     constructor(parseHash) {
@@ -42,7 +43,7 @@ export class OperationsList {
         }
     }
 
-    showRecords(operations) {
+    showRecords(operations: OperationsResponseType): void {
         const recordsElement = this.recordsElement;
         recordsElement.innerHTML = ''; // Очистим таблицу перед добавлением новых записей
         // заполняем таблицу данными об операциях

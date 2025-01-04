@@ -1,23 +1,40 @@
-import {Main} from "./components/main.js";
-import {Incomes} from "./components/incomes/incomes.js";
-import {Expenses} from "./components/expenses/expenses.js";
-import {OperationsList} from "./components/operations/operations-list.js";
-import {AuthUtils} from "./utils/auth-utils.js";
-import {Logout} from "./components/auth/logout.js";
-import {Form} from "./components/auth/form.js";
-import {CategoryCreating} from "./components/categories/category-creating.js";
-import {OperationCreating} from "./components/operations/operation-creating.js";
-import {CategoryEdit} from "./components/categories/category-edit.js";
-import {OperationEdit} from "./components/operations/operation-edit.js";
-import {OperationDelete} from "./components/operations/operation-delete.js";
-import {Balance} from "./components/balance.js";
+import {Main} from "./components/main";
+import {Incomes} from "./components/incomes/incomes";
+import {Expenses} from "./components/expenses/expenses";
+import {OperationsList} from "./components/operations/operations-list";
+import {AuthUtils} from "./utils/auth-utils";
+import {Logout} from "./components/auth/logout";
+import {Form} from "./components/auth/form";
+import {CategoryCreating} from "./components/categories/category-creating";
+import {OperationCreating} from "./components/operations/operation-creating";
+import {CategoryEdit} from "./components/categories/category-edit";
+import {OperationEdit} from "./components/operations/operation-edit";
+import {OperationDelete} from "./components/operations/operation-delete";
+import {Balance} from "./components/balance";
+import {RouteType} from "./types/route.type";
+import {UserInfoType} from "./types/user-info.type";
 
 export class Router {
+    private titlePageElement: HTMLElement | null;
+    private contentPageElement: HTMLElement | null;
+    private toggleElement: HTMLElement | null;
+    private activeBlockElement: HTMLElement | null;
+    private burgerElement: HTMLElement | null;
+    private sidebarElement: HTMLElement | null;
+    private dropdownMenuElement: HTMLElement | null;
+    private listElement: HTMLElement | null;
+    private collapsedSvgElement: HTMLElement | null;
+    private currentRoute: string;
+    private routes: RouteType[];
+
     constructor() {
         this.titlePageElement = document.getElementById('title');
         this.contentPageElement = document.getElementById('content');
         this.toggleElement = null;
         this.activeBlockElement = null;
+        // this.burgerElement = null;
+        // this.sidebarElement = null;
+        // this.dropdownMenuElement = null;
         this.listElement = null;
         this.collapsedSvgElement = null;
         this.currentRoute = '#/login';
@@ -42,7 +59,7 @@ export class Router {
                 route: '#/login',
                 title: 'Вход',
                 template: 'src/templates/pages/auth/login.html',
-                useLayout: false,
+                useLayout: '',
                 load: () => {
                     new Form('login');
                 },
@@ -54,7 +71,7 @@ export class Router {
                 route: '#/signup',
                 title: 'Регистрация',
                 template: 'src/templates/pages/auth/signup.html',
-                useLayout: false,
+                useLayout: '',
                 load: () => {
                     new Form('signup');
                 },
@@ -221,16 +238,16 @@ export class Router {
         ]
     }
 
-    initEvents() {
+    private initEvents(): void {
         window.addEventListener('DOMContentLoaded', this.activateRoute.bind(this));
         window.addEventListener('popstate', this.activateRoute.bind(this));
     }
 
-    parseHash() {
-        const hash = window.location.hash; // Получаем hash из адресной строки
-        const [routeWithHash, queryString] = hash.split('?'); // Разделяем на маршрут и параметры
+    private parseHash(): {routeWithHash: string, params: Record<string, string> | null} {
+        const hash: string = window.location.hash; // Получаем hash из адресной строки
+        const [routeWithHash, queryString]: [string, string | undefined] = hash.split('?'); // Разделяем на маршрут и параметры
 
-        const params = queryString ? Object.fromEntries(new URLSearchParams(queryString).entries()) : null; // Если параметры есть, создаем объект URLSearchParams
+        const params: Record<string, string> | null = queryString ? Object.fromEntries(new URLSearchParams(queryString).entries()) : null; // Если параметры есть, создаем объект URLSearchParams
 
         return {
             routeWithHash, // Маршрут с символом #
@@ -238,36 +255,38 @@ export class Router {
         };
     }
 
-    async activateRoute() {
-        const { routeWithHash } = this.parseHash(); // Получаем текущий маршрут
-        const previousRoute = this.currentRoute; // Сохраняем предыдущий маршрут
+    private async activateRoute(): Promise<void> {
+        const { routeWithHash }: string = this.parseHash(); // Получаем текущий маршрут
+        const previousRoute: string = this.currentRoute; // Сохраняем предыдущий маршрут
         this.currentRoute = routeWithHash; // Обновляем текущий маршрут
         // Находим объект маршрута для предыдущего
-        const previousRouteObject = this.routes.find(route => route.route === previousRoute);
-        if (previousRouteObject.styles && previousRouteObject.styles.length > 0) {
-            // находим и удаляем старые стили
-            previousRouteObject.styles.forEach(style => {
-                const linkElement = document.querySelector(`link[href='src/styles/${style}']`);
-                if (linkElement) {
-                    linkElement.remove();
-                }
-            });
+        const previousRouteObject: RouteType | undefined = this.routes.find(route => route.route === previousRoute);
+        if (previousRouteObject) {
+            if (previousRouteObject.styles && previousRouteObject.styles.length > 0) {
+                // находим и удаляем старые стили
+                previousRouteObject.styles.forEach((style: string): void => {
+                    const linkElement: HTMLElement | null = document.querySelector(`link[href='src/styles/${style}']`);
+                    if (linkElement) {
+                        linkElement.remove();
+                    }
+                });
+            }
         }
 
-        const newRoute = this.routes.find(item => {
-            const {routeWithHash} = this.parseHash(); //получаем маршрут без параметров
-            // return item.route === window.location.hash;
+
+        const newRoute: RouteType | undefined = this.routes.find((item: RouteType): boolean => {
+            const {routeWithHash}: string = this.parseHash(); //получаем маршрут без параметров
             return item.route === routeWithHash;
         });
 
         if (newRoute) {
-            if (newRoute.title) {
+            if (newRoute.title && this.titlePageElement) {
                 this.titlePageElement.innerText = newRoute.title;
             }
 
             if (newRoute.styles && newRoute.styles.length > 0) {
-                newRoute.styles.forEach(style => {
-                    const link = document.createElement('link');
+                newRoute.styles.forEach((style: string): void => {
+                    const link: HTMLLinkElement = document.createElement('link');
                     link.rel = 'stylesheet';
                     link.href = `src/styles/${style}`;
                     document.head.appendChild(link);
@@ -275,17 +294,24 @@ export class Router {
             }
 
             if (newRoute.template) {
-                let contentBlock = this.contentPageElement;
-                this.contentPageElement.classList.remove('content-center-auth');
+                let contentBlock: HTMLElement | null = this.contentPageElement;
+                if (this.contentPageElement) {
+                    this.contentPageElement.classList.remove('content-center-auth');
+                }
 
                 if (newRoute.useLayout) {
-                    this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
-                    contentBlock = document.getElementById('content-layout');
-                    this.profileUserElement = document.getElementById('profile-user');
-                    const userInfo = AuthUtils.getUserInfo();
+                    if (this.contentPageElement) {
+                        this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
+                    }
 
-                    if (userInfo && userInfo.name && userInfo.lastName) {
-                        this.profileUserElement.innerText = `${userInfo.name} ${userInfo.lastName}`;
+                    contentBlock = document.getElementById('content-layout');
+                    const profileUserElement: HTMLElement | null = document.getElementById('profile-user');
+                    const userInfo: UserInfoType | null = AuthUtils.getUserInfo();
+
+                    if (profileUserElement) {
+                        if (userInfo && userInfo.name && userInfo.lastName) {
+                            profileUserElement.innerText = `${userInfo.name} ${userInfo.lastName}`;
+                        }
                     }
 
                     this.burgerElement = document.getElementById("burger");
@@ -294,17 +320,24 @@ export class Router {
                     this.activeBlockElement = document.getElementById('active-block');
                     this.listElement = document.getElementById('dashboard-collapse');
                     this.collapsedSvgElement = document.getElementById('collapsed-svg');
-                    this.userIconElement = document.getElementById("user-icon");
+                    const userIconElement: HTMLElement | null = document.getElementById("user-icon");
                     this.dropdownMenuElement = document.getElementById("dropdown-menu");
-                    this.userIconElement.addEventListener('click', this.showLogout.bind(this));
-
-                    this.burgerElement.addEventListener('click', this.showSidebar.bind(this));
+                    if (userIconElement) {
+                        userIconElement.addEventListener('click', this.showLogout.bind(this));
+                    }
+                    if (this.burgerElement) {
+                        this.burgerElement.addEventListener('click', this.showSidebar.bind(this));
+                    }
 
                     this.activateMenuItem(newRoute);
                 } else {
-                    this.contentPageElement.classList.add('content-center-auth');
+                    if (this.contentPageElement) {
+                        this.contentPageElement.classList.add('content-center-auth');
+                    }
                 }
-                contentBlock.innerHTML = await fetch(newRoute.template).then(response => response.text());
+                if (contentBlock) {
+                    contentBlock.innerHTML = await fetch(newRoute.template).then(response => response.text());
+                }
             }
             if (newRoute.load && typeof newRoute.load === 'function') {
                 newRoute.load();
@@ -315,38 +348,44 @@ export class Router {
         }
     }
 
-    activateMenuItem(route) {
-        document.querySelectorAll('.nav-link').forEach(link => {
-            const href = link.getAttribute('href');
+    private activateMenuItem(route): void {
+        document.querySelectorAll('.nav-link').forEach((link: HTMLElement): void => {
+            const href: string = link.getAttribute('href');
             if ((route.route.includes(href) && href !== '#/') || (route.route === "#/" && href === '#/')) {
                 link.classList.add('active');
             } else {
                 link.classList.remove('active');
             }
-            if (route.route.includes('#/incomes') || route.route.includes('#/expenses')) {
-                this.toggleElement.classList.add('active');
-                this.activeBlockElement.classList.add('active-block');
-                this.toggleElement.classList.remove('collapsed');
-                this.listElement.classList.add('show');
-                this.collapsedSvgElement.classList.add('collapsed');
-            } else {
-                this.toggleElement.classList.remove('active');
-                this.activeBlockElement.classList.remove('active-block');
-                this.toggleElement.classList.add('collapsed');
-                this.listElement.classList.remove('show');
-                this.collapsedSvgElement.classList.remove('collapsed');
+            if (this.toggleElement && this.activeBlockElement && this.listElement && this.collapsedSvgElement) {
+                if (route.route.includes('#/incomes') || route.route.includes('#/expenses')) {
+                    this.toggleElement.classList.add('active');
+                    this.activeBlockElement.classList.add('active-block');
+                    this.toggleElement.classList.remove('collapsed');
+                    this.listElement.classList.add('show');
+                    this.collapsedSvgElement.classList.add('collapsed');
+                } else {
+                    this.toggleElement.classList.remove('active');
+                    this.activeBlockElement.classList.remove('active-block');
+                    this.toggleElement.classList.add('collapsed');
+                    this.listElement.classList.remove('show');
+                    this.collapsedSvgElement.classList.remove('collapsed');
+                }
             }
         });
     }
 
-    showSidebar() {
-        this.sidebarElement.classList.toggle("d-none");
-        this.sidebarElement.classList.toggle("d-flex");
-        this.sidebarElement.classList.toggle("sidebar-background");
-        this.burgerElement.classList.toggle("burger-margin");
+    private showSidebar(): void {
+        if (this.sidebarElement && this.burgerElement) {
+            this.sidebarElement.classList.toggle("d-none");
+            this.sidebarElement.classList.toggle("d-flex");
+            this.sidebarElement.classList.toggle("sidebar-background");
+            this.burgerElement.classList.toggle("burger-margin");
+        }
     }
 
-    showLogout() {
-        this.dropdownMenuElement.classList.toggle('show');
+    private showLogout(): void {
+        if (this.dropdownMenuElement) {
+            this.dropdownMenuElement.classList.toggle('show');
+        }
     }
 }

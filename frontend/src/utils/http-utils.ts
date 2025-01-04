@@ -1,27 +1,27 @@
-import {AuthUtils} from "./auth-utils.js";
-import config from "../../config/config.js";
+import {AuthUtils} from "./auth-utils";
+import {ResultRequestType} from "../types/result-request.type";
 
 export class HttpUtils {
-    static async request(url, method = 'GET', body = null, retries = 1) {
-        const result = {
+    public static async request<T = any>(url: string, method: string = 'GET', body: any = null, retries: number = 1): Promise<ResultRequestType<T>> {
+        const result: ResultRequestType<T> = {
             error: false,
             response: null,
         };
-        const params = {
+        const params: RequestInit  = {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
         };
-        let token = localStorage.getItem(AuthUtils.accessTokenKey);
+        let token: string | null = localStorage.getItem(AuthUtils.accessTokenKey);
         if (token) {
-            params.headers['x-auth-token'] = token;
+            params.headers as Record<string, string>['x-auth-token'] = token;
         }
         if (body) {
             params.body = JSON.stringify(body);
         }
-        let response = null;
+        let response: Response | null = null;
         try {
             response = await fetch(url, params);
             result.response = await response.json();
@@ -37,7 +37,7 @@ export class HttpUtils {
                 if (!token) {
                     result.redirect = '#/login';
                 } else {
-                    const updateTokenResult = await AuthUtils.processUnauthorizedResponse();
+                    const updateTokenResult: boolean = await AuthUtils.processUnauthorizedResponse();
                     if (updateTokenResult) {
                         return await this.request(url, method, body, retries - 1);
                     } else {
