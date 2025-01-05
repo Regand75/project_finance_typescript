@@ -1,14 +1,28 @@
 import {OperationsService} from "../services/operations-service";
-import {FilterUtils} from "../utils/filter-utils.ts";
-import {OperationsResponseType} from "../types/operations-response.type";
+import {FilterUtils} from "../utils/filter-utils";
+import Chart, {ChartConfiguration} from "chart.js";
+import {OperationsResponseType, OperationsSuccessResponse} from "../types/operations-response.type";
 
 export class Main {
+    readonly filtersContainer: HTMLElement | null;
+    readonly defaultData: any;
+    readonly configIncomes: ChartConfiguration;
+    readonly configExpenses: ChartConfiguration;
+    readonly ctxIncomes: CanvasRenderingContext2D;
+    readonly ctxExpenses: CanvasRenderingContext2D;
+    readonly getContext: CanvasRenderingContext2D | null;
+    readonly myPieChartIncomes: Chart;
+    readonly myPieChartExpenses: Chart;
+
     constructor() {
         this.filtersContainer = document.getElementById('filters-container'); // Родительский контейнер кнопок фильтра
 
-        this.filtersContainer.addEventListener('click', event =>
-            FilterUtils.handleFilterClick(event, this.updateCharts.bind(this))
-        );
+        if (this.filtersContainer) {
+            this.filtersContainer.addEventListener('click', event =>
+                FilterUtils.handleFilterClick(event, this.updateCharts.bind(this))
+            );
+        }
+
         if (!localStorage.getItem('accessToken')) {
             return location.href = '#/login';
         }
@@ -57,8 +71,8 @@ export class Main {
             },
         };
         // Инициализация диаграммы
-        this.ctxIncomes = document.getElementById('pieChartIncomes').getContext('2d');
-        this.ctxExpenses = document.getElementById('pieChartExpenses').getContext('2d');
+        this.ctxIncomes = (document.getElementById('pieChartIncomes') as HTMLCanvasElement).getContext('2d');
+        this.ctxExpenses = (document.getElementById('pieChartExpenses') as HTMLCanvasElement).getContext('2d');
         this.myPieChartIncomes = new Chart(this.ctxIncomes, this.configIncomes);
         this.myPieChartExpenses = new Chart(this.ctxExpenses, this.configExpenses);
 
@@ -68,15 +82,15 @@ export class Main {
         FilterUtils.initializeDatepickers();
     }
 
-    private async getOperations(period): Promise<void> {
+    private async getOperations(period: string): Promise<void> {
         try {
-            const operationsResult = await OperationsService.getOperations(`?period=${period}`);
-            if (operationsResult && operationsResult.length > 0) {
-                this.updateCharts(operationsResult);
-
-            } else if (operationsResult.error) {
-                console.log(operationsResult.error);
+            const operationsResult: OperationsResponseType = await OperationsService.getOperations(`?period=${period}`);
+            if ('error' in operationsResult) {
+                // Ошибка
                 location.href = '#/';
+                return;
+            } else if (operationsResult.length > 0) {
+                this.updateCharts(operationsResult);
             } else {
                 // Если операций нет, отображаем "Нет данных"
                 this.updateCharts([]);
@@ -86,11 +100,11 @@ export class Main {
         }
     }
 
-    updateCharts(operationsResult: OperationsResponseType): void {
-        const incomeCategories = {};
-        const expenseCategories = {};
+    private updateCharts(operationsResult: OperationsSuccessResponse[]): void {
+        const incomeCategories: {} = {};
+        const expenseCategories: {} = {};
 
-        operationsResult.forEach(operation => {
+        operationsResult.forEach((operation: OperationsSuccessResponse): void => {
             if (operation.type === "income") {
                 incomeCategories[operation.category] =
                     (incomeCategories[operation.category] || 0) + operation.amount;
@@ -106,9 +120,9 @@ export class Main {
     }
 
     // Метод для обновления диаграмм
-    updateChart(chart, categoryData) {
-        const labels = Object.keys(categoryData);
-        const data = Object.values(categoryData);
+    private updateChart(chart: any, categoryData: Record<string, number>): void {
+        const labels: string[] = Object.keys(categoryData);
+        const data: unknown[] = Object.values(categoryData);
 
         if (labels.length === 0 || data.length === 0) {
             // Если данных нет, отображаем заглушку

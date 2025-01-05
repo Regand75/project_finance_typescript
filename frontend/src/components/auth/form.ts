@@ -1,8 +1,16 @@
-import {AuthUtils} from "../../utils/auth-utils.ts";
+import {AuthUtils} from "../../utils/auth-utils";
 import {AuthService} from "../../services/auth-service";
+import {LoginResponseType, SignupResponseType} from "../../types/auth-response.type";
+import {FormFieldType} from "../../types/form-field.type";
 
 export class Form {
-    constructor(page) {
+    private commonErrorElement: HTMLElement | null;
+    private processElement: HTMLElement | null;
+    private rememberMeElement: HTMLElement | null;
+    readonly page: 'signup' | 'login';
+    private fields: FormFieldType[] = [];
+
+    constructor(page: 'signup' | 'login') {
         if (localStorage.getItem('accessToken')) {
             return location.href = '#/';
         }
@@ -44,35 +52,47 @@ export class Form {
                 },)
         }
 
-        this.fields.forEach(item => {
-            item.element = document.getElementById(item.id);
-            item.element.onchange = () => {
-                this.validateField(item, item.element);
+        this.fields.forEach((item: FormFieldType): void => {
+            item.element = document.getElementById(item.id) as HTMLInputElement;
+            if (item.element) {
+                item.element.onchange = () => {
+                    this.validateField(item, item.element);
+                }
             }
         });
 
         if (this.page === 'login') {
             this.rememberMeElement = document.getElementById('rememberMe');
         }
-
-        this.processElement.addEventListener('click', this.processForm.bind(this));
+        if (this.processElement) {
+            this.processElement.addEventListener('click', this.processForm.bind(this));
+        }
     }
 
-    validateField(field, element) {
+    private validateField(field: FormFieldType, element: HTMLInputElement | null): void {
+        if (!element) {
+            return;
+        }
         if (field.name === 'passwordRepeat') {
-            const passwordRepeatInvalidElement = document.getElementById('passwordRepeatInvalid');
-            const passwordField = this.fields.find(item => item.name === 'password');
-            if (!element.value || element.value !== passwordField.element.value) {
-                passwordRepeatInvalidElement.style.display = 'block';
-                passwordRepeatInvalidElement.innerText = "Пароли должны совпадать";
-                element.classList.add('is-invalid');
-                field.valid = false;
-            } else {
-                passwordRepeatInvalidElement.style.display = 'none';
-                element.classList.remove('is-invalid');
-                field.valid = true;
+            const passwordRepeatInvalidElement: HTMLElement | null = document.getElementById('passwordRepeatInvalid');
+            const passwordField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'password');
+            if (passwordField.element) {
+                if (!element.value || element.value !== passwordField.element.value) {
+                    if (passwordRepeatInvalidElement) {
+                        passwordRepeatInvalidElement.style.display = 'block';
+                        passwordRepeatInvalidElement.innerText = "Пароли должны совпадать";
+                    }
+                    element.classList.add('is-invalid');
+                    field.valid = false;
+                } else {
+                    if (passwordRepeatInvalidElement) {
+                        passwordRepeatInvalidElement.style.display = 'none';
+                    }
+                    element.classList.remove('is-invalid');
+                    field.valid = true;
+                }
             }
-        } else if (!element.value || !element.value.match(field.regex)) {
+        } else if (!element.value || (field.regex && !element.value.match(field.regex))) {
             element.classList.add('is-invalid');
             field.valid = false;
         } else {
@@ -82,44 +102,66 @@ export class Form {
         this.validateForm();
     };
 
-    validateForm() {
-        const validForm = this.fields.every(item => item.valid);
-        if (validForm) {
-            this.processElement.removeAttribute('disabled');
-        } else {
-            this.processElement.setAttribute('disabled', 'disabled');
+    private validateForm(): boolean {
+        const validForm: boolean = this.fields.every((item: FormFieldType) => item.valid);
+        if (this.processElement) {
+            if (validForm) {
+                this.processElement.removeAttribute('disabled');
+            } else {
+                this.processElement.setAttribute('disabled', 'disabled');
+            }
         }
         return validForm;
     };
 
-    extractNameAndLastName(fullName) {
-        const parts = fullName.trim().split(/\s+/); // Разделяем по пробелам
-        const lastName = parts[0] || ''; // Второе слово — фамилия
-        const name = parts[1] || ''; // Первое слово — имя
+    private extractNameAndLastName(fullName: string): {name: string, lastName: string} {
+        const parts: string[] = fullName.trim().split(/\s+/); // Разделяем по пробелам
+        const lastName: string = parts[0] || ''; // Второе слово — фамилия
+        const name: string = parts[1] || ''; // Первое слово — имя
         return {name, lastName};
     }
 
-    async processForm() {
-        this.commonErrorElement.style.display = 'none';
+    private async processForm(): Promise<any> {
+        if (this.commonErrorElement) {
+            this.commonErrorElement.style.display = 'none';
+        }
         if (this.validateForm()) {
-            const email = this.fields.find(item => item.name === 'email').element.value;
-            const password = this.fields.find(item => item.name === 'password').element.value;
+            let email: string | null = null;
+            let password: string | null = null;
+            let {name, lastName}: string = null;
+            const emailField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'email');
+            const passwordField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'password');
+
+
+            if (emailField?.element && passwordField?.element) {
+                email = emailField.element.value;
+                password = passwordField.element.value;
+                }
 
             if (this.page === 'signup') {
                 // Извлечение имени и фамилии
-                const nameField = this.fields.find(item => item.name === 'fullName');
-                const {name, lastName} = this.extractNameAndLastName(nameField.element.value);
-
+                const nameField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'fullName');
+                if (nameField?.element) {
+                    ({name, lastName} = this.extractNameAndLastName(nameField.element.value));
+                }
+                let passwordRepeat: string | null = null;
+                const passwordRepeatField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'passwordRepeat');
+                if (passwordRepeatField?.element) {
+                    passwordRepeat = passwordRepeatField.element.value;
+                }
                 try {
-                    const signupResult = await AuthService.signup({
+                    const signupResult: SignupResponseType = await AuthService.signup({
                         name: name,
                         lastName: lastName,
                         email: email,
                         password: password,
-                        passwordRepeat: this.fields.find(item => item.name === 'passwordRepeat').element.value,
+                        passwordRepeat: passwordRepeat,
                     });
-                    if (!signupResult) {
-                        this.commonErrorElement.style.display = 'block';
+                    if ('error' in signupResult) {
+                        // Ошибка
+                        if (this.commonErrorElement) {
+                            this.commonErrorElement.style.display = 'block';
+                        }
                         return;
                     }
                 } catch (error) {
@@ -132,12 +174,19 @@ export class Form {
                     password: password,
                     rememberMe: false,
                 };
-                if (this.rememberMeElement && this.rememberMeElement.checked) {
+                if (this.rememberMeElement && (this.rememberMeElement as HTMLInputElement).checked) {
                     body.rememberMe = true;
                 }
 
-                const loginResult = await AuthService.login(body);
-                if (loginResult) {
+                const loginResult: LoginResponseType = await AuthService.login(body);
+                if ('error' in loginResult) {
+                    // Ошибка
+                    if (this.commonErrorElement) {
+                        this.commonErrorElement.style.display = 'block';
+                    }
+                    return;
+                } else {
+                    // Успешный ответ
                     AuthUtils.setToken(loginResult.tokens.accessToken, loginResult.tokens.refreshToken);
                     AuthUtils.setUserInfo({
                         name: loginResult.user.name,
@@ -145,9 +194,6 @@ export class Form {
                         id: loginResult.user.id,
                     });
                     location.href = '#/';
-                } else {
-                    this.commonErrorElement.style.display = 'block';
-                    return;
                 }
             } catch (error) {
                 console.log(error);

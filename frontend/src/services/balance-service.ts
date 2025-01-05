@@ -1,5 +1,5 @@
-import {HttpUtils} from "../utils/http-utils.ts";
-import config from "../../config/config.ts";
+import {HttpUtils} from "../utils/http-utils";
+import config from "../../config/config";
 
 export class BalanceService {
     static async getBalance() {

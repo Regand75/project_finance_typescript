@@ -1,4 +1,4 @@
-import {AuthUtils} from "../../utils/auth-utils.ts";
+import {AuthUtils} from "../../utils/auth-utils";
 import {AuthService} from "../../services/auth-service";
 
 export class Logout {
@@ -9,8 +9,8 @@ export class Logout {
         this.logout().then();
     }
 
-    async logout() {
-        const refreshToken = localStorage.getItem(AuthUtils.refreshTokenKey);
+    private async logout(): Promise<void> {
+        const refreshToken: string = localStorage.getItem(AuthUtils.refreshTokenKey);
         if (refreshToken) {
             await AuthService.logOut({
                 refreshToken: refreshToken,

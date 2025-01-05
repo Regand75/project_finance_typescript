@@ -1,5 +1,5 @@
 import config from "../../config/config";
-import {TokenResponse} from "../types/refresh-response.type";
+import {RefreshResponseType} from "../types/refresh-response.type";
 import {UserInfoType} from "../types/user-info.type";
 
 export class AuthUtils {
@@ -22,20 +22,22 @@ export class AuthUtils {
                 }),
             });
             if (response && response.status === 200) {
-                const token: TokenResponse = await response.json();
-                if ('tokens' in token) {
+                const token: RefreshResponseType = await response.json();
+                if ('error' in token) {
+                    // Ошибка
+                    console.error('Ошибка обновления токена:', token.message);
+                    if (token.validation && token.validation.length > 0) {
+                        token.validation.forEach((validationError: {key: string, message: string}) =>
+                            console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
+                        );
+                    }
+                } else {
                     // Успешный ответ
                     this.setToken(token.tokens.accessToken, token.tokens.refreshToken);
                     result = true;
-                } else {
-                    // Ошибка
-                    console.error('Ошибка обновления токена:', token.message);
-                    if (token.validation) {
-                        console.error('Детали ошибки:', token.validation);
-                    }
                 }
             } else {
-                console.error('Не удалось обновить токен:', response.status);
+                console.error('Не удалось обновить токен:', response?.status ?? 'Нет ответа');
             }
         }
         if (!result) {
@@ -58,13 +60,13 @@ export class AuthUtils {
         localStorage.removeItem(this.refreshTokenKey);
     }
 
-    public static setUserInfo(info: string): void {
+    public static setUserInfo(info: string | { name: string; lastName: string; id: number }): void {
         localStorage.setItem(this.userInfoKey, JSON.stringify(info));
     }
 
     public static getUserInfo(): UserInfoType | null {
         const userInfo: string | null = localStorage.getItem(this.userInfoKey);
-        return userInfo ? JSON.parse(userInfo) : null;
+        return userInfo ? JSON.parse(userInfo) as UserInfoType : null;
     }
 
     public static removeUserInfo(): void {

@@ -1,17 +1,17 @@
-interface TokenSuccessResponse {
+interface RefreshSuccessResponse {
     tokens: {
-        accessToken: string;
-        refreshToken: string;
-    };
+        accessToken: string,
+        refreshToken: string,
+    },
 }
 
-interface TokenErrorResponse {
-    error: true;
-    message: string;
+interface RefreshErrorResponse {
+    error: true,
+    message: string,
     validation?: {
-        key: string;
-        message: string;
-    }[];
+        key: string,
+        message: string,
+    }[],
 }
 
-export type TokenResponse = TokenSuccessResponse | TokenErrorResponse;
+export type RefreshResponseType = RefreshSuccessResponse | RefreshErrorResponse;

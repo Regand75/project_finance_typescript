@@ -8,10 +8,29 @@ export class OperationsService {
     public static async getOperations(params: string = ''): Promise<OperationsResponseType> {
         const result: ResultRequestType<OperationsResponseType> = await HttpUtils.request<OperationsResponseType>(config.host + '/operations' + params);
         if (result.redirect || result.error || !result.response) {
-            alert('Возникла ошибка при запросе операций. Обратитесь в поддержку');
+            if ('error' in result) {
+                console.log('Ошибка: ', result.message);
+                if (result.validation && result.validation.length > 0) {
+                    result.validation.forEach((validationError: {key: string, message: string}) =>
+                        console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
+                    );
+                }
+            }
             return;
         }
-        return result.response;
+        if (
+            result.response &&
+            'id' in result.response &&
+            'type' in result.response &&
+            'amount' in result.response &&
+            'date' in result.response &&
+            'comment' in result.response &&
+            'category' in result.response
+        ) {
+            return result.response; // Успешный ответ
+        }
+        alert('Возникла ошибка при запросе операций. Обратитесь в поддержку');;
+        return
     }
 
     public static async getOperation(params: string = ''): Promise<any>  {

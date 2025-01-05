@@ -1,6 +1,6 @@
 import {OperationsService} from "../services/operations-service";
 import 'bootstrap-datepicker';
-import {OperationsResponseType} from "../types/operations-response.type";
+import {OperationsResponseType, OperationsSuccessResponse} from "../types/operations-response.type";
 
 export class FilterUtils {
 
@@ -34,7 +34,7 @@ export class FilterUtils {
         return `${year}-${month}-${day}`;
     }
 
-    public static async handleFilterClick(event: MouseEvent, showRecords: void | null = null, updateChart: void | null = null): Promise<void> {
+    public static async handleFilterClick(event: MouseEvent, showRecords: any | null = null, updateChart: any | null = null): Promise<void> {
         const target: Element | null = (event.target as Element).closest('button[data-period]');
         const filterIntervalHiddenElement: HTMLElement | null = document.getElementById('filter-block');
         if (target) {
