@@ -1,16 +1,27 @@
 import {OperationsService} from "../../services/operations-service";
-import {CommonUtils} from "../../utils/common-utils.ts";
-import {FilterUtils} from "../../utils/filter-utils.ts";
+import {CommonUtils} from "../../utils/common-utils";
+import {FilterUtils} from "../../utils/filter-utils";
+import {OperationResponseType} from "../../types/operations-response.type";
+import {FormFieldType} from "../../types/form-field.type";
 
 export class OperationEdit {
-    constructor(parseHash) {
-        const { params } = parseHash();
+    private params: Record<string, string> | null;
+    private operationOriginalData: OperationResponseType | null;
+    private typeElement: HTMLSelectElement | null;
+    private categoryElement: HTMLSelectElement | null;
+    readonly operationEditButton: HTMLElement | null;
+    private fields: FormFieldType[] = [];
+
+    constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
+        const {params} = parseHash();
         this.params = params;
-        this.operationOriginalData= null;
-        this.typeElement = document.getElementById('typeSelect');
-        this.categoryElement = document.getElementById('categorySelect');
+        this.operationOriginalData = null;
+        this.typeElement = document.getElementById('typeSelect') as HTMLSelectElement;
+        this.categoryElement = document.getElementById('categorySelect') as HTMLSelectElement;
         this.operationEditButton = document.getElementById('operation-edit');
-        this.operationEditButton.addEventListener('click', this.saveOperation.bind(this));
+        if (this.operationEditButton) {
+            this.operationEditButton.addEventListener('click', this.saveOperation.bind(this));
+        }
 
         CommonUtils.initBackButton();
 
@@ -40,56 +51,65 @@ export class OperationEdit {
         // Инициализация datepicker
         FilterUtils.initializeDatepickers();
 
-        this.getOperation(this.params.id).then();
+        if (this.params && 'id' in this.params) {
+            this.getOperation(this.params.id).then();
+        }
 
         this.fields.forEach(item => {
-            item.element = document.getElementById(item.id);
+            item.element = document.getElementById(item.id) as HTMLInputElement;
             item.element.onchange = () => {
                 this.validateField(item, item.element);
             }
         });
     }
 
-    async getOperation(id) {
+    private async getOperation(id: string): Promise<void> {
         try {
-            const operationResult = await OperationsService.getOperation(`/${id}`);
+            const operationResult: OperationResponseType = await OperationsService.getOperation(`/${id}`);
             if (operationResult) {
                 this.operationOriginalData = operationResult; // сохраняем данные для дальнейшего отслеживания изменений
-                for (let i = 0; i < this.typeElement.options.length; i++) {
-                    if (this.typeElement.options[i].value === operationResult.type) {
-                        this.typeElement.options[i].selected = true;
+                if (this.typeElement && 'type' in operationResult) {
+                    for (let i: number = 0; i < this.typeElement.options.length; i++) {
+                        if (this.typeElement.options[i].value === operationResult.type) {
+                            this.typeElement.options[i].selected = true;
+                        }
                     }
+                    this.typeElement.disabled = true;
+                    this.getCategories(operationResult.type);
                 }
-                this.typeElement.disabled = true;
-                this.getCategories(operationResult.type);
-                this.categoryElement.disabled = true;
+                if (this.categoryElement) {
+                    this.categoryElement.disabled = true;
+                }
 
-                this.fields.forEach(field => {
-                    const inputElement = document.getElementById(field.id);
+                this.fields.forEach((field: FormFieldType): void => {
+                    const inputElement: HTMLElement | null = document.getElementById(field.id);
                     if (inputElement) {
-                        field.element = inputElement;
+                        field.element = inputElement as HTMLInputElement;
                         if (field.name === 'date' && operationResult[field.name]) {
                             // Преобразуем дату в формат день.месяц.год
-                            const date = new Date(operationResult.date); // Преобразуем строку в объект Date
-                            inputElement.value = new Intl.DateTimeFormat('ru-RU').format(date);
+                            if ('date' in operationResult) {
+                                const dateConvert: Date = new Date(operationResult.date); // Преобразуем строку в объект Date
+                                (inputElement as HTMLInputElement).value = new Intl.DateTimeFormat('ru-RU').format((dateConvert));
+                            }
                         } else {
-                            inputElement.value = operationResult[field.name];
+                            (inputElement as HTMLInputElement).value = operationResult[field.name];
                         }
                     }
                 });
-                this.fields.forEach(field => {
+                this.fields.forEach((field: FormFieldType): void => {
                     this.validateField(field, field.element);
                 });
-            } else if (operationResult.error) {
-                console.log(operationResult.error);
+            } else {
+                // Ошибка
                 location.href = '#/operations';
+                return;
             }
         } catch (error) {
             console.log(error);
         }
     }
 
-    async getCategories(type) {
+    private async getCategories(type): Promise<void> {
         try {
             const categoriesResult = await OperationsService.getCategories(`/${type}`);
             if (categoriesResult && categoriesResult.length > 0) {
@@ -154,7 +174,7 @@ export class OperationEdit {
             );
             if (changedData) {
                 try {
-                    const operationResult = await OperationsService.updateOperation(`/${this.params.id}`, operationData);
+                    const operationResult: OperationResponseType = await OperationsService.updateOperation(`/${this.params.id}`, operationData);
                     if (operationResult) {
                         location.href = '#/operations';
                     }

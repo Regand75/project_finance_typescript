@@ -85,15 +85,17 @@ export class Main {
     private async getOperations(period: string): Promise<void> {
         try {
             const operationsResult: OperationsResponseType = await OperationsService.getOperations(`?period=${period}`);
-            if ('error' in operationsResult) {
+            if (operationsResult) {
+                if ((operationsResult as OperationsSuccessResponse[]).length > 0) {
+                    this.updateCharts((operationsResult as OperationsSuccessResponse[]));
+                } else {
+                    // Если операций нет, отображаем "Нет данных"
+                    this.updateCharts([]);
+            }
+            } else {
                 // Ошибка
                 location.href = '#/';
                 return;
-            } else if (operationsResult.length > 0) {
-                this.updateCharts(operationsResult);
-            } else {
-                // Если операций нет, отображаем "Нет данных"
-                this.updateCharts([]);
             }
         } catch (error) {
             console.log(error);
