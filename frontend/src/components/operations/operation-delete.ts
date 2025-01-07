@@ -1,9 +1,14 @@
 import {OperationsService} from "../../services/operations-service";
 import {ModalManager} from "../modal";
+import {OperationsErrorResponse} from "../../types/operations-response.type";
 
 export class OperationDelete {
-    constructor(parseHash) {
-        const { params } = parseHash();
+    readonly params: Record<string, string> | null;
+    readonly buttonNoDeleteElement: HTMLElement | null;
+    readonly buttonDeleteElement: HTMLElement | null;
+
+    constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
+        const { params }: Record<string, string> | null = parseHash();
         this.params = params;
         this.buttonNoDeleteElement = document.getElementById('no-delete');
         this.buttonDeleteElement = document.getElementById("modal-delete");
@@ -18,19 +23,22 @@ export class OperationDelete {
                 location.href = '#/operations';
             });
         }
-        ModalManager.showModal(this.params.id);
+        if (this.params && 'id' in this.params) {
+            ModalManager.showModal(this.params.id);
+        }
     }
 
-    async deletedOperation(id) {
+    private async deletedOperation(): Promise<void> {
         try {
-            const operationResult = await OperationsService.deleteOperation(`/${this.params.id}`);
-            if (operationResult) {
-                ModalManager.hideModal();
-                location.href = '#/operations';
-                console.log('DELETED operation');
-            } else if (operationResult.error) {
-                console.log(operationResult.error);
-                location.href = '#/';
+            if (this.params && 'id' in this.params) {
+                const operationResult: OperationsErrorResponse | false = await OperationsService.deleteOperation(`/${this.params.id}`);
+                if (operationResult) {
+                    ModalManager.hideModal();
+                    location.href = '#/operations';
+                    console.log('DELETED operation');
+                } else {
+                    location.href = '#/';
+                }
             }
         } catch (error) {
             console.log(error);

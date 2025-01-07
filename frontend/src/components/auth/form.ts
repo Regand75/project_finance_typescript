@@ -4,9 +4,9 @@ import {LoginResponseType, SignupResponseType} from "../../types/auth-response.t
 import {FormFieldType} from "../../types/form-field.type";
 
 export class Form {
-    private commonErrorElement: HTMLElement | null;
-    private processElement: HTMLElement | null;
-    private rememberMeElement: HTMLElement | null;
+    readonly commonErrorElement: HTMLElement | null;
+    readonly processElement: HTMLElement | null;
+    readonly rememberMeElement: HTMLElement | null;
     readonly page: 'signup' | 'login';
     private fields: FormFieldType[] = [];
 
@@ -179,21 +179,24 @@ export class Form {
                 }
 
                 const loginResult: LoginResponseType = await AuthService.login(body);
-                if ('error' in loginResult) {
+                if (loginResult) {
+                    if ('tokens' in loginResult && 'user' in loginResult) {
+                        // Успешный ответ
+                        AuthUtils.setToken(loginResult.tokens.accessToken, loginResult.tokens.refreshToken);
+                        AuthUtils.setUserInfo({
+                            name: loginResult.user.name,
+                            lastName: loginResult.user.lastName,
+                            id: loginResult.user.id,
+                        });
+                    }
+                    location.href = '#/';
+                    return;
+                } else {
                     // Ошибка
                     if (this.commonErrorElement) {
                         this.commonErrorElement.style.display = 'block';
                     }
                     return;
-                } else {
-                    // Успешный ответ
-                    AuthUtils.setToken(loginResult.tokens.accessToken, loginResult.tokens.refreshToken);
-                    AuthUtils.setUserInfo({
-                        name: loginResult.user.name,
-                        lastName: loginResult.user.lastName,
-                        id: loginResult.user.id,
-                    });
-                    location.href = '#/';
                 }
             } catch (error) {
                 console.log(error);

@@ -32,9 +32,6 @@ export class Router {
         this.contentPageElement = document.getElementById('content');
         this.toggleElement = null;
         this.activeBlockElement = null;
-        // this.burgerElement = null;
-        // this.sidebarElement = null;
-        // this.dropdownMenuElement = null;
         this.listElement = null;
         this.collapsedSvgElement = null;
         this.currentRoute = '#/login';

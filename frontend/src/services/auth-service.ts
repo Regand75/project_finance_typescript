@@ -7,18 +7,12 @@ export class AuthService {
 
     public static async login(data: any): Promise<LoginResponseType> {
         const result: ResultRequestType<LoginResponseType> = await HttpUtils.request<LoginResponseType>(config.host + '/login', 'POST', data);
-        if (result.error || !result.response) {
-            if ('error' in result) {
-                console.log('Ошибка: ', result.message);
-                if (result.validation && result.validation.length > 0) {
-                    result.validation.forEach((validationError: {key: string, message: string}) =>
-                        console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
-                    );
-                }
+        if (result.error) {
+            if (result.response && 'error' in result.response) {
+                this.logError(result.response);
             }
-            return;
-        }
-        if ('tokens' in result.response && 'user' in result.response) {
+            return false;
+        } else if (result.response && 'tokens' in result.response && 'user' in result.response) {
             if (
                 result.response.tokens.accessToken &&
                 result.response.tokens.refreshToken &&
@@ -29,23 +23,17 @@ export class AuthService {
                 return result.response; // Успешный ответ
             }
         }
-        return;
+        return false;
     }
 
     public static async signup(data: any): Promise<SignupResponseType> {
         const result: ResultRequestType<SignupResponseType> = await HttpUtils.request<SignupResponseType>(config.host + '/signup', 'POST', data);
-        if (result.error || !result.response) {
-            if ('error' in result) {
-                console.log('Ошибка: ', result.message);
-                if (result.validation && result.validation.length > 0) {
-                    result.validation.forEach((validationError: {key: string, message: string}) =>
-                        console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
-                    );
-                }
+        if (result.error) {
+            if (result.response && 'error' in result.response) {
+                this.logError(result.response);
             }
-            return;
-        }
-        if ('user' in result.response) {
+            return false;
+        } else if ('user' in result.response) {
             if (
                 result.response.user.id &&
                 result.response.user.email &&
@@ -55,10 +43,20 @@ export class AuthService {
                 return result.response; // Успешный ответ
             }
         }
-        return;
+        return false;
     }
 
     public static async logOut(data: any): Promise<void> {
         await HttpUtils.request(config.host + '/logout', 'POST', data);
     }
+
+    private static logError(response: any): void {
+        console.log('Ошибка: ', response.message);
+        if (response.validation?.length > 0) {
+            response.validation.forEach((validationError: {key: string, message: string}) =>
+                console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
+            );
+        }
+    }
+
 }

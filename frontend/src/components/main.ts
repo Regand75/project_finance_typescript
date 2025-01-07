@@ -91,7 +91,7 @@ export class Main {
                 } else {
                     // Если операций нет, отображаем "Нет данных"
                     this.updateCharts([]);
-            }
+                }
             } else {
                 // Ошибка
                 location.href = '#/';

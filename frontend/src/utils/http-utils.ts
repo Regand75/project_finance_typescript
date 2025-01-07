@@ -35,13 +35,15 @@ export class HttpUtils {
             result.status = response.status;
             if (response.status === 401 && retries > 0) {
                 if (!token) {
-                    result.redirect = '#/login';
+                    location.href = '#/login';
+                    return;
                 } else {
                     const updateTokenResult: boolean = await AuthUtils.processUnauthorizedResponse();
                     if (updateTokenResult) {
                         return await this.request(url, method, body, retries - 1);
                     } else {
-                        result.redirect = '#/login';
+                        location.href = '#/login';
+                        return ;
                     }
                 }
             }

@@ -21,18 +21,9 @@ export class AuthUtils {
                     refreshToken: refreshToken,
                 }),
             });
-            if (response && response.status === 200) {
+            if (response && response.ok) {
                 const token: RefreshResponseType = await response.json();
-                if ('error' in token) {
-                    // Ошибка
-                    console.error('Ошибка обновления токена:', token.message);
-                    if (token.validation && token.validation.length > 0) {
-                        token.validation.forEach((validationError: {key: string, message: string}) =>
-                            console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
-                        );
-                    }
-                } else {
-                    // Успешный ответ
+                if ('tokens' in token) {
                     this.setToken(token.tokens.accessToken, token.tokens.refreshToken);
                     result = true;
                 }

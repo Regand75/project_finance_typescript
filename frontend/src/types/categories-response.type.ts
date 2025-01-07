@@ -1,16 +1,17 @@
-export interface CategoriesSuccessResponse {
+
+export interface CategorySuccessResponse {
     id: number,
     title: string,
 }
 
-export type CategoryResponse = {
+export type CategoryRequest = {
     title: string,
 }
 
-export interface CategoriesErrorResponse {
+export interface CategoryErrorResponse {
     error: boolean,
     message: string,
 }
 
-export type CategoriesResponseType = CategoriesSuccessResponse[] | CategoriesErrorResponse | false;
-export type CategoryResponseType = CategoriesSuccessResponse | CategoriesErrorResponse | false;
+export type CategoriesResponseType = CategorySuccessResponse[] | CategoryErrorResponse | false;
+export type CategoryResponseType = CategorySuccessResponse | CategoryErrorResponse | false;

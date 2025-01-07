@@ -1,18 +1,20 @@
 import {BalanceService} from "../services/balance-service";
+import {BalanceResponseType} from "../types/balance-response.type";
 
 export class Balance {
+    private balanceElement: HTMLElement | null;
+
     constructor() {
         this.balanceElement = document.getElementById("balance");
         this.getBalance().then();
     }
 
-    async getBalance() {
+    private async getBalance(): Promise<void> {
         try {
-            const balanceResult = await BalanceService.getBalance();
+            const balanceResult: BalanceResponseType | false = await BalanceService.getBalance();
             if (balanceResult) {
                 this.updateBalance(balanceResult);
-            } else if (balanceResult.error) {
-                console.log(balanceResult.error);
+            } else {
                 location.href = '#/';
             }
         } catch (error) {
@@ -20,7 +22,9 @@ export class Balance {
         }
     }
 
-    updateBalance(balance) {
-        this.balanceElement.innerText = balance.balance + '$';
+    private updateBalance(balance: BalanceResponseType): void {
+        if (this.balanceElement) {
+            this.balanceElement.innerText = balance.balance + '$';
+        }
     }
 }

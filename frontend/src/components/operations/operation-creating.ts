@@ -1,19 +1,32 @@
 import {OperationsService} from "../../services/operations-service";
-import {CommonUtils} from "../../utils/common-utils.ts";
-import {FilterUtils} from "../../utils/filter-utils.ts";
+import {CommonUtils} from "../../utils/common-utils";
+import {FilterUtils} from "../../utils/filter-utils";
+import {FormFieldType} from "../../types/form-field.type";
+import {CategoriesResponseType} from "../../types/categories-response.type";
+import {OperationRequest, OperationResponseType} from "../../types/operations-response.type";
 
 export class OperationCreating {
-    constructor(parseHash) {
-        const { params } = parseHash();
+    readonly params: Record<string, string> | null;
+    readonly typeElement: HTMLElement | null;
+    readonly categoryElement: HTMLElement | null;
+    readonly operationCreatingButton: HTMLElement | null;
+    private fields: FormFieldType[] = [];
+
+    constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
+        const { params }: Record<string, string> | null = parseHash();
         this.params = params;
         this.typeElement = document.getElementById('typeSelect');
         this.categoryElement = document.getElementById('categorySelect');
         this.operationCreatingButton = document.getElementById('operation-creating');
-        this.operationCreatingButton.addEventListener('click', this.saveOperation.bind(this));
+        if (this.operationCreatingButton) {
+            this.operationCreatingButton.addEventListener('click', this.saveOperation.bind(this));
+        }
 
         CommonUtils.initBackButton();
 
-        this.typeElement.addEventListener('change', this.changeCategorySelect.bind(this));
+        if (this.typeElement) {
+            this.typeElement.addEventListener('change', this.changeCategorySelect.bind(this));
+        }
 
         this.fields = [
             {
@@ -34,6 +47,7 @@ export class OperationCreating {
                 name: 'comment',
                 id: 'comment',
                 element: null,
+                regex: /.*/,
                 valid: false,
             },
         ];
@@ -41,24 +55,27 @@ export class OperationCreating {
         // Инициализация datepicker
         FilterUtils.initializeDatepickers();
 
-        this.fields.forEach(item => {
-            item.element = document.getElementById(item.id);
-            item.element.onchange = () => {
-                this.validateField(item, item.element);
+        this.fields.forEach((item: FormFieldType): void => {
+            item.element = document.getElementById(item.id) as HTMLInputElement;
+            if (item.element) {
+                item.element.onchange = () => {
+                    this.validateField(item, item.element);
+                }
             }
         });
 
-        this.getCategories(this.params.category).then();
+        if ('category' in this.params) {
+            this.getCategories(this.params.category).then();
+        }
     }
 
-    async getCategories(categoryType) {
+    private async getCategories(categoryType: string): Promise<void> {
         try {
-            const categoriesResult = await OperationsService.getCategories(`/${categoryType}`);
+            const categoriesResult: CategoriesResponseType = await OperationsService.getCategories(`/${categoryType}`);
             if (categoriesResult) {
                 this.showTypeSelects();
                 this.showCategorySelect(categoriesResult);
-            } else if (categoriesResult.error) {
-                console.log(categoriesResult.error);
+            } else {
                 location.href = '#/operations';
             }
         } catch (error) {
@@ -66,13 +83,12 @@ export class OperationCreating {
         }
     }
 
-    async changeCategorySelect() {
+    private async changeCategorySelect(): Promise<void> {
         try {
-            const categoriesResult = await OperationsService.getCategories(`/${this.typeElement.value}`);
-            if (categoriesResult && categoriesResult.length > 0) {
+            const categoriesResult: CategoriesResponseType = await OperationsService.getCategories(`/${(this.typeElement as HTMLSelectElement).value}`);
+            if (categoriesResult && (categoriesResult as CategoriesResponseType[]).length > 0) {
                 this.showCategorySelect(categoriesResult);
-            } else if (categoriesResult.error) {
-                console.log(categoriesResult.error);
+            } else {
                 location.href = '#/operations';
             }
         } catch (error) {
@@ -80,66 +96,95 @@ export class OperationCreating {
         }
     }
 
-    showTypeSelects() {
-        for (let i = 0; i < this.typeElement.options.length; i++) {
-            if (this.typeElement.options[i].value === this.params.category) {
-                this.typeElement.options[i].selected = true;
+    private showTypeSelects(): void {
+        if ('category' in this.params) {
+            for (let i = 0; i < (this.typeElement as HTMLSelectElement).options.length; i++) {
+                if ((this.typeElement as HTMLSelectElement).options[i].value === this.params.category) {
+                    (this.typeElement as HTMLSelectElement).options[i].selected = true;
+                }
             }
         }
     }
 
-    showCategorySelect(categoryList) {
-        this.categoryElement.innerHTML = ''; // очищаем select
+    private showCategorySelect(categoryList): void {
+        if (this.categoryElement) {
+            this.categoryElement.innerHTML = ''; // очищаем select
+        }
         categoryList.forEach(item => {
-            const option = document.createElement("option");
+            const option:HTMLOptionElement = document.createElement("option");
             option.value = item.id;
             option.innerText = item.title;
-            this.categoryElement.appendChild(option);
+            if (this.categoryElement) {
+                this.categoryElement.appendChild(option);
+            }
         });
     }
 
-    validateField(field, element) {
-        if (!element.value || !element.value.match(field.regex)) {
-            element.classList.add('is-invalid');
-            field.valid = false;
-        } else {
-            element.classList.remove('is-invalid');
-            field.valid = true;
+    private validateField(field: FormFieldType, element: HTMLInputElement | null): void {
+        if (element) {
+            if (!element.value || !element.value.match(field.regex)) {
+                element.classList.add('is-invalid');
+                field.valid = false;
+            } else {
+                element.classList.remove('is-invalid');
+                field.valid = true;
+            }
         }
         this.validateForm();
     }
 
-    validateForm() {
+    private validateForm(): boolean {
         const validForm = this.fields.every(item => item.valid);
-        if (validForm) {
-            this.operationCreatingButton.removeAttribute('disabled');
-        } else {
-            this.operationCreatingButton.setAttribute('disabled', 'disabled');
+        if (this.operationCreatingButton) {
+            if (validForm) {
+                this.operationCreatingButton.removeAttribute('disabled');
+            } else {
+                this.operationCreatingButton.setAttribute('disabled', 'disabled');
+            }
         }
         return validForm;
     };
 
-    async saveOperation(e) {
+    private async saveOperation(e: Event): Promise<void> {
         e.preventDefault();
 
         if (this.validateForm()) {
-            const amount = this.fields.find(item => item.name === 'amount').element.value;
-            const date = CommonUtils.convertDate(this.fields.find(item => item.name === 'date').element.value);
-            const comment = document.getElementById('comment').value;
+            let type: string = '';
+            let amount: number;
+            let date: string = '';
+            let comment: string = '';
+            let categoryId: number;
+            if (this.typeElement) {
+                type = (this.typeElement as HTMLSelectElement).value;
+            }
+            const amountField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'amount')
+            if (amountField && amountField.element) {
+                amount = parseInt(amountField.element.value);
+            }
+            const dateField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'date');
+            if (dateField && dateField.element) {
+                date = CommonUtils.convertDate(dateField.element.value);
+            }
+            const commentField: HTMLElement | null = document.getElementById('comment');
+            if (commentField) {
+                comment = (commentField as HTMLInputElement).value;
+            }
+            const categoryIdField: string = (this.categoryElement as HTMLInputElement).value;
+            if (this.categoryElement) {
+                categoryId = parseInt(categoryIdField);
+            }
             try {
-                const operationResult = await OperationsService.createOperation({
-                    type: this.typeElement.value,
-                    amount: parseInt(amount),
+                const operationResult: OperationResponseType = await OperationsService.createOperation(({
+                    type: type,
+                    amount: amount,
                     date: date,
                     comment: comment,
-                    category_id: parseInt(this.categoryElement.value),
-                });
+                    category_id: categoryId,
+                } as OperationRequest));
                 if (operationResult) {
                     location.href = '#/operations';
-                }
-                if (operationResult.error) {
-                    console.log(operationResult.error);
-                    location.href = `#/${this.typeElement.value}s`;
+                } else {
+                    location.href = `#/${type}s`;
                 }
             } catch (error) {
                 console.log(error);

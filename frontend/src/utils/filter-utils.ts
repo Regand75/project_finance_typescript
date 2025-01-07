@@ -1,6 +1,6 @@
 import {OperationsService} from "../services/operations-service";
 import 'bootstrap-datepicker';
-import {OperationsResponseType, OperationsSuccessResponse} from "../types/operations-response.type";
+import {OperationsResponseType} from "../types/operations-response.type";
 
 export class FilterUtils {
 

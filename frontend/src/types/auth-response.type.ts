@@ -19,7 +19,7 @@ interface LoginErrorResponse {
     }[],
 }
 
-export type LoginResponseType = LoginSuccessResponse | LoginErrorResponse;
+export type LoginResponseType = LoginSuccessResponse | LoginErrorResponse | false;
 
 interface SignupSuccessResponse {
     user: {
@@ -39,4 +39,4 @@ interface SignupErrorResponse {
     }[],
 }
 
-export type SignupResponseType = SignupSuccessResponse | SignupErrorResponse;
+export type SignupResponseType = SignupSuccessResponse | SignupErrorResponse | false;

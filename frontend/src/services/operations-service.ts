@@ -2,27 +2,26 @@ import {HttpUtils} from "../utils/http-utils";
 import config from "../../config/config";
 import {
     OperationRequest,
-    OperationResponseType,
+    OperationResponseType, OperationsErrorResponse,
     OperationsResponseType
 } from "../types/operations-response.type";
 import {ResultRequestType} from "../types/result-request.type";
+import {
+    CategoriesResponseType, CategoryErrorResponse,
+    CategoryRequest,
+    CategoryResponseType
+} from "../types/categories-response.type";
 
 export class OperationsService {
 
     public static async getOperations(params: string = ''): Promise<OperationsResponseType> {
         const result: ResultRequestType<OperationsResponseType> = await HttpUtils.request<OperationsResponseType>(config.host + '/operations' + params);
-        if (result.redirect || result.error || !result.response) {
-            if ('error' in result) {
-                console.log('Ошибка: ', result.message);
-                if (result.validation && result.validation.length > 0) {
-                    result.validation.forEach((validationError: { key: string, message: string }) =>
-                        console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
-                    );
-                }
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
             }
             return false;
-        }
-        if (
+        } else if (
             result.response &&
             'id' in result.response &&
             'type' in result.response &&
@@ -39,18 +38,12 @@ export class OperationsService {
 
     public static async getOperation(params: string = ''): Promise<OperationResponseType> {
         const result: ResultRequestType<OperationResponseType> = await HttpUtils.request<OperationResponseType>(config.host + '/operations' + params);
-        if (result.redirect || result.error || !result.response) {
-            if ('error' in result) {
-                console.log('Ошибка: ', result.message);
-                if (result.validation && result.validation.length > 0) {
-                    result.validation.forEach((validationError: { key: string, message: string }) =>
-                        console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
-                    );
-                }
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
             }
             return false;
-        }
-        if (
+        } else if (
             result.response &&
             'id' in result.response &&
             'type' in result.response &&
@@ -67,93 +60,153 @@ export class OperationsService {
 
     public static async updateOperation(param: string, data: OperationRequest): Promise<OperationResponseType> {
         const result: ResultRequestType<OperationResponseType> = await HttpUtils.request<OperationResponseType>(config.host + '/operations' + param, 'PUT', data);
-        if (result.redirect || result.error || !result.response) {
-            if ('error' in result) {
-                console.log('Ошибка: ', result.message);
-                if (result.validation && result.validation.length > 0) {
-                    result.validation.forEach((validationError: { key: string, message: string }) =>
-                        console.error(`Поле: ${validationError.key}, Ошибка: ${validationError.message}`)
-                    );
-                }
-                return false;
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
             }
-            if (
-                result.response &&
-                'id' in result.response &&
-                'type' in result.response &&
-                'amount' in result.response &&
-                'date' in result.response &&
-                'comment' in result.response &&
-                'category' in result.response
-            ) {
-                return result.response; // Успешный ответ
-            }
+            return false;
+        } else if (
+            result.response &&
+            'id' in result.response &&
+            'type' in result.response &&
+            'amount' in result.response &&
+            'date' in result.response &&
+            'comment' in result.response &&
+            'category' in result.response
+        ) {
+            return result.response; // Успешный ответ
         }
         alert('Возникла ошибка при обновлении операции. Обратитесь в поддержку');
         return false;
     }
 
-    public static async createOperation(data: OperationRequest): Promise<void> {
-        const result = await HttpUtils.request(config.host + '/operations', 'POST', data);
-        if (result.redirect || result.error || !result.response) {
-            if (result.status !== 400) {
-                return alert('Возникла ошибка при создании операции. Обратитесь в поддержку');
-            } else if (result.status === 400) {
-                return alert('Такая запись уже существует');
+    public static async createOperation(data: OperationRequest): Promise<OperationResponseType> {
+        const result: ResultRequestType<OperationResponseType> = await HttpUtils.request<OperationResponseType>(config.host + '/operations', 'POST', data);
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                if (result.status !== 400){
+                    console.log('Ошибка: ', result.response.message);
+                } else if (result.status === 400) {
+                    alert('Такая запись уже существует');
+                }
             }
+            return false;
+        } else if (
+            result.response &&
+            'id' in result.response &&
+            'type' in result.response &&
+            'amount' in result.response &&
+            'date' in result.response &&
+            'comment' in result.response &&
+            'category' in result.response
+        ) {
+            return result.response; // Успешный ответ
         }
-        return result.response;
+        alert('Возникла ошибка при создании операции. Обратитесь в поддержку');
+        return false;
     }
 
-    public static async deleteOperation(params = ''): Promise<void> {
-        const result = await HttpUtils.request(config.host + '/operations' + params, 'DELETE');
-        if (result.redirect || result.error || !result.response) {
-            return alert('Возникла ошибка при удалении операции. Обратитесь в поддержку');
-        }
-        return result.response;
-    }
-
-    public static async getCategories(params = '') {
-        const result = await HttpUtils.request(config.host + '/categories' + params);
-        if (result.redirect || result.error || !result.response) {
-            return alert('Возникла ошибка при запросе категорий. Обратитесь в поддержку');
-        }
-        return result.response;
-    }
-
-    public static async getCategory(params = '') {
-        const result = await HttpUtils.request(config.host + '/categories' + params);
-        if (result.redirect || result.error || !result.response) {
-            return alert('Возникла ошибка при запросе категории. Обратитесь в поддержку');
-        }
-        return result.response;
-    }
-
-    public static async createCategory(partPath, data) {
-        const result = await HttpUtils.request(config.host + '/categories' + partPath, 'POST', data);
-        if (result.redirect || result.error || !result.response) {
-            if (result.status !== 400) {
-                return alert('Возникла ошибка при создании категории. Обратитесь в поддержку');
-            } else if (result.status === 400) {
-                return alert('Такая запись уже существует');
+    public static async deleteOperation(params: string = ''): Promise<OperationsErrorResponse | false> {
+        const result: ResultRequestType<OperationsErrorResponse> = await HttpUtils.request<OperationsErrorResponse>(config.host + '/operations' + params, 'DELETE');
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
             }
+            return false;
+        } else if (result.response && !result.response.error){
+            return result.response; // Успешный ответ
         }
-        return result.response;
+        alert('Возникла ошибка при удалении операции. Обратитесь в поддержку');
+        return false;
     }
 
-    public static async updateCategory(partPath, data) {
-        const result = await HttpUtils.request(config.host + '/categories' + partPath, 'PUT', data);
-        if (result.redirect || result.error || !result.response) {
-            return alert('Возникла ошибка при обновлении категории. Обратитесь в поддержку');
+    public static async getCategories(params: string = ''): Promise<CategoriesResponseType> {
+        const result: ResultRequestType<CategoriesResponseType> = await HttpUtils.request<CategoriesResponseType>(config.host + '/categories' + params);
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
+            }
+            return false;
+        } else if (
+            result.response &&
+            'id' in result.response &&
+            'title' in result.response
+        ) {
+            return result.response; // Успешный ответ
         }
-        return result.response;
+        alert('Возникла ошибка при запросе категорий. Обратитесь в поддержку');
+        return false;
     }
 
-    public static async deleteCategory(params = '') {
-        const result = await HttpUtils.request(config.host + '/categories' + params, 'DELETE');
-        if (result.redirect || result.error || !result.response) {
-            return alert('Возникла ошибка при удалении категории. Обратитесь в поддержку');
+    public static async getCategory(params: string = ''): Promise<CategoryResponseType> {
+        const result: ResultRequestType<CategoryResponseType> = await HttpUtils.request<CategoryResponseType>(config.host + '/categories' + params);
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
+            }
+            return false;
+        } else if (
+            result.response &&
+            'id' in result.response &&
+            'title' in result.response
+        ) {
+            return result.response; // Успешный ответ
         }
-        return result.response;
+        alert('Возникла ошибка при запросе категории. Обратитесь в поддержку');
+        return false;
+    }
+
+    public static async createCategory(partPath: string, data: CategoryRequest): Promise<CategoryResponseType> {
+        const result: ResultRequestType<CategoryResponseType> = await HttpUtils.request<CategoryResponseType>(config.host + '/categories' + partPath, 'POST', data);
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                if (result.status !== 400){
+                    console.log('Ошибка: ', result.response.message);
+                } else if (result.status === 400) {
+                    alert('Такая запись уже существует');
+                }
+            }
+            return false;
+        } else if (
+            result.response &&
+            'id' in result.response &&
+            'title' in result.response
+        ) {
+            return result.response; // Успешный ответ
+        }
+        alert('Возникла ошибка при создании категории. Обратитесь в поддержку');
+        return false;
+    }
+
+    public static async updateCategory(partPath: string, data: CategoryRequest): Promise<CategoryResponseType> {
+        const result: ResultRequestType<CategoryResponseType> = await HttpUtils.request<CategoryResponseType>(config.host + '/categories' + partPath, 'PUT', data);
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
+            }
+            return false;
+        } else if (
+            result.response &&
+            'id' in result.response &&
+            'title' in result.response
+        ) {
+            return result.response; // Успешный ответ
+        }
+        alert('Возникла ошибка при обновлении категории. Обратитесь в поддержку');
+        return false;
+    }
+
+    public static async deleteCategory(params = ''): Promise<CategoryErrorResponse | false> {
+        const result: ResultRequestType<CategoryErrorResponse> = await HttpUtils.request<CategoryErrorResponse>(config.host + '/categories' + params, 'DELETE');
+        if (result.error) {
+            if (result.response && 'error' in result.response && result.response.error) {
+                console.log('Ошибка: ', result.response.message);
+            }
+            return false;
+        } else if (result.response && !result.response.error){
+            return result.response; // Успешный ответ
+        }
+        alert('Возникла ошибка при удалении категории. Обратитесь в поддержку');
+        return false;
     }
 }

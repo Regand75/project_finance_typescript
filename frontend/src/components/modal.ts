@@ -1,6 +1,6 @@
 export class ModalManager {
 
-    public static showModal(id: number, category: string | null = null): void {
+    public static showModal(id: string, category: string | null = null): void {
         const modalOverlay: HTMLElement | null = document.getElementById("modal-overlay");
         if (modalOverlay) {
             modalOverlay.dataset.params = JSON.stringify({id: id, category: category}); // сохраняем id и название категории
