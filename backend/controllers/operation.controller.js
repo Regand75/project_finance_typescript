@@ -41,9 +41,6 @@ class OperationController {
             params.category_expense_id = category_id;
             params.type = 'expense';
             newBalance -= params.amount;
-            if (newBalance < 0) {
-                newBalance = 0;
-            }
         } else if (type === 'income') {
             params.category_income_id = category_id;
             params.type = 'income';

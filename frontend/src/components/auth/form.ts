@@ -4,19 +4,21 @@ import {LoginResponseType, SignupResponseType} from "../../types/auth-response.t
 import {FormFieldType} from "../../types/form-field.type";
 
 export class Form {
-    readonly commonErrorElement: HTMLElement | null;
-    readonly processElement: HTMLElement | null;
-    readonly rememberMeElement: HTMLElement | null;
+    readonly commonErrorElement: HTMLElement | null = null;
+    readonly processElement: HTMLElement | null = null;
+    readonly rememberMeElement: HTMLElement | null = null;
     readonly page: 'signup' | 'login';
     private fields: FormFieldType[] = [];
 
     constructor(page: 'signup' | 'login') {
+        this.page = page;
         if (localStorage.getItem('accessToken')) {
-            return location.href = '#/';
+            location.href = '#/';
+            return;
         }
         this.commonErrorElement = document.getElementById('common-error');
         this.processElement = document.getElementById('process-button');
-        this.page = page;
+
         this.fields = [
             {
                 name: 'email',
@@ -48,6 +50,7 @@ export class Form {
                     name: 'passwordRepeat',
                     id: 'passwordRepeat',
                     element: null,
+                    regex: /.*/,
                     valid: false,
                 },)
         }
@@ -75,8 +78,8 @@ export class Form {
         }
         if (field.name === 'passwordRepeat') {
             const passwordRepeatInvalidElement: HTMLElement | null = document.getElementById('passwordRepeatInvalid');
-            const passwordField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'password');
-            if (passwordField.element) {
+            const passwordField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'password');
+            if (passwordField && passwordField.element) {
                 if (!element.value || element.value !== passwordField.element.value) {
                     if (passwordRepeatInvalidElement) {
                         passwordRepeatInvalidElement.style.display = 'block';
@@ -128,25 +131,27 @@ export class Form {
         if (this.validateForm()) {
             let email: string | null = null;
             let password: string | null = null;
-            let {name, lastName}: string = null;
-            const emailField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'email');
-            const passwordField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'password');
+            let name: string | null = null;
+            let lastName: string | null = null;
+            // let {name, lastName}: string | null;
+            const emailField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'email');
+            const passwordField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'password');
 
 
-            if (emailField?.element && passwordField?.element) {
+            if (emailField && emailField?.element && passwordField&& passwordField?.element) {
                 email = emailField.element.value;
                 password = passwordField.element.value;
                 }
 
             if (this.page === 'signup') {
                 // Извлечение имени и фамилии
-                const nameField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'fullName');
-                if (nameField?.element) {
+                const nameField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'fullName');
+                if (nameField && nameField?.element) {
                     ({name, lastName} = this.extractNameAndLastName(nameField.element.value));
                 }
                 let passwordRepeat: string | null = null;
-                const passwordRepeatField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'passwordRepeat');
-                if (passwordRepeatField?.element) {
+                const passwordRepeatField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'passwordRepeat');
+                if (passwordRepeatField && passwordRepeatField?.element) {
                     passwordRepeat = passwordRepeatField.element.value;
                 }
                 try {
@@ -157,7 +162,7 @@ export class Form {
                         password: password,
                         passwordRepeat: passwordRepeat,
                     });
-                    if ('error' in signupResult) {
+                    if (signupResult && 'error' in signupResult) {
                         // Ошибка
                         if (this.commonErrorElement) {
                             this.commonErrorElement.style.display = 'block';

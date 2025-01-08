@@ -12,10 +12,10 @@ export class OperationEdit {
     readonly categoryElement: HTMLSelectElement | null;
     readonly operationEditButton: HTMLElement | null;
     private fields: FormFieldType[] = [];
-    private typeField: 'expense' | 'income';
+    private typeField: 'expense' | 'income' = 'income';
 
     constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
-        const {params}: Record<string, string> | null = parseHash();
+        const {params} = parseHash();
         this.params = params;
         this.operationOriginalData = null;
         this.typeElement = document.getElementById('typeSelect') as HTMLSelectElement;
@@ -46,6 +46,7 @@ export class OperationEdit {
                 name: 'comment',
                 id: 'comment',
                 element: null,
+                regex: /.*/,
                 valid: false,
             },
         ];
@@ -59,8 +60,10 @@ export class OperationEdit {
 
         this.fields.forEach((item: FormFieldType): void => {
             item.element = document.getElementById(item.id) as HTMLInputElement;
-            item.element.onchange = () => {
-                this.validateField(item, item.element);
+            if (item.element) {
+                item.element.onchange = () => {
+                    this.validateField(item, item.element);
+                }
             }
         });
     }
@@ -87,14 +90,15 @@ export class OperationEdit {
                     const inputElement: HTMLElement | null = document.getElementById(field.id);
                     if (inputElement) {
                         field.element = inputElement as HTMLInputElement;
-                        if (field.name === 'date' && operationResult[field.name]) {
+                        const key = field.name as keyof OperationsSuccessResponse;
+                        if (key === 'date' && (operationResult as OperationsSuccessResponse)[key]) {
                             // Преобразуем дату в формат день.месяц.год
-                            if ('date' in operationResult) {
+                            if (operationResult && 'date' in operationResult) {
                                 const dateConvert: Date = new Date(operationResult.date); // Преобразуем строку в объект Date
                                 (inputElement as HTMLInputElement).value = new Intl.DateTimeFormat('ru-RU').format((dateConvert));
                             }
-                        } else {
-                            (inputElement as HTMLInputElement).value = operationResult[field.name];
+                        } else if (key in operationResult) {
+                            (inputElement as HTMLInputElement).value = String((operationResult as OperationsSuccessResponse)[key]);
                         }
                     }
                 });
@@ -145,13 +149,15 @@ export class OperationEdit {
         });
     }
 
-    validateField(field, element) {
-        if (!element.value || !element.value.match(field.regex)) {
-            element.classList.add('is-invalid');
-            field.valid = false;
-        } else {
-            element.classList.remove('is-invalid');
-            field.valid = true;
+    private validateField(field: FormFieldType, element: HTMLInputElement | null): void {
+        if (element) {
+            if (!element.value || !element.value.match(field.regex)) {
+                element.classList.add('is-invalid');
+                field.valid = false;
+            } else {
+                element.classList.remove('is-invalid');
+                field.valid = true;
+            }
         }
         this.validateForm();
     }
@@ -175,15 +181,15 @@ export class OperationEdit {
             if (this.typeElement && (this.typeElement.value === 'expense' || this.typeElement.value === 'income')) {
                 this.typeField = this.typeElement.value;
             }
-            const amountField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'amount');
+            const amountField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'amount');
             if (!amountField || !amountField.element) {
                 return;
             }
-            const dateField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'date');
+            const dateField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'date');
             if (!dateField || !dateField.element) {
                 return;
             }
-            const commentField: HTMLElement = document.getElementById('comment');
+            const commentField: HTMLElement | null = document.getElementById('comment');
             if (!commentField) {
                 return;
             }
@@ -198,13 +204,24 @@ export class OperationEdit {
                 category_id: parseInt(this.categoryElement.value, 10)
             };
                 // Проверяем наличие хотя бы одного различия
-            const changedData: boolean = Object.keys(operationData).some((key: string) =>
-                this.operationOriginalData &&
-                typeof this.operationOriginalData === 'object' &&
-                Object.prototype.hasOwnProperty.call(this.operationOriginalData, key) &&
-                operationData[key] !== this.operationOriginalData[key]
-            );
-            if (changedData && 'id' in this.params) {
+            const changedData: boolean = (Object.keys(operationData) as (keyof OperationsSuccessResponse)[]).some((key: keyof OperationsSuccessResponse) => {
+                if (
+                    this.operationOriginalData &&
+                    typeof this.operationOriginalData === 'object' &&
+                    Object.prototype.hasOwnProperty.call(this.operationOriginalData, key) &&
+                    Object.prototype.hasOwnProperty.call(operationData, key)
+                ) {
+                    return operationData[key as keyof OperationRequest] !== this.operationOriginalData[key];
+                }
+                return false;
+            });
+            // const changedData: boolean = (Object.keys(operationData) as (keyof OperationsSuccessResponse)[]).some((key: keyof OperationsSuccessResponse) =>
+            //     this.operationOriginalData &&
+            //     typeof this.operationOriginalData === 'object' &&
+            //     Object.prototype.hasOwnProperty.call(this.operationOriginalData, key) &&
+            //     operationData[key] !== this.operationOriginalData[key]
+            // );
+            if (changedData && this.params && 'id' in this.params) {
                 try {
                     const operationResult: OperationResponseType = await OperationsService.updateOperation(`/${this.params.id}`, operationData);
                     if (operationResult) {

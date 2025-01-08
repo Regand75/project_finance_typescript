@@ -1,61 +1,76 @@
 import {OperationsService} from "../../services/operations-service";
 import {UrlUtils as urlUtils} from "../../utils/url-utils";
 import {CommonUtils} from "../../utils/common-utils";
+import {CategoryResponseType} from "../../types/categories-response.type";
 
 export class CategoryEdit {
-    constructor(parseHash) {
-        const { params } = parseHash();
+    readonly params: Record<string, string> | null;
+    readonly category: string | undefined;
+    readonly categoryInput: HTMLElement | null;
+    readonly categorySaveElement: HTMLElement | null;
+    private categoryOriginalData: string | null = null;
+
+    constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
+        const {params} = parseHash();
         this.params = params;
         this.category = urlUtils.getUrlHashPart();
         this.categoryInput = document.getElementById("category-input");
         this.categorySaveElement = document.getElementById('category-save');
 
-        this.categorySaveElement.addEventListener('click', this.saveCategory.bind(this));
+        if (this.categorySaveElement) {
+            this.categorySaveElement.addEventListener('click', this.saveCategory.bind(this));
+        }
 
-        this.categoryInput.addEventListener('input', this.activeButton.bind(this));
+        if (this.categoryInput) {
+            this.categoryInput.addEventListener('input', this.activeButton.bind(this));
+        }
 
         CommonUtils.initBackButton();
 
         this.outputCategory().then();
     }
 
-    async outputCategory() {
-        try {
-            const categoryResult = await OperationsService.getCategory(`/${this.category}/${this.params.id}`);
-            if (categoryResult) {
-                this.categoryOriginalData = categoryResult.title;
-                this.categoryInput.value = categoryResult.title;
-            } else if (categoryResult.error) {
-                console.log(categoryResult.error);
-                location.href = '#/operations';
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    activeButton() {
-        if (this.categoryInput.value !== '') {
-            this.categorySaveElement.removeAttribute('disabled');
-        } else {
-            this.categorySaveElement.setAttribute('disabled', 'disabled');
-        }
-    }
-
-    async saveCategory() {
-        if (this.categoryInput.value !== this.categoryOriginalData) {
+    private async outputCategory(): Promise<void> {
+        if (this.params && 'id' in this.params) {
             try {
-                const updateCategoryResult = await OperationsService.updateCategory(`/${this.category}/${this.params.id}`, {
-                    title: this.categoryInput.value,
-                });
-                if (updateCategoryResult) {
-                    location.href = `#/${this.category}s`;
-                } else if (updateCategoryResult.error) {
-                    console.log(updateCategoryResult.error);
+                const categoryResult: CategoryResponseType = await OperationsService.getCategory(`/${this.category}/${this.params.id}`);
+                if (categoryResult && 'title' in categoryResult) {
+                    this.categoryOriginalData = categoryResult.title;
+                    (this.categoryInput as HTMLInputElement).value = categoryResult.title;
+                } else {
                     location.href = '#/operations';
                 }
             } catch (error) {
                 console.log(error);
+            }
+        }
+    }
+
+    private activeButton(): void {
+        if (this.categorySaveElement) {
+            if ((this.categoryInput as HTMLInputElement).value !== '') {
+                this.categorySaveElement.removeAttribute('disabled');
+            } else {
+                this.categorySaveElement.setAttribute('disabled', 'disabled');
+            }
+        }
+    }
+
+    private async saveCategory(): Promise<void> {
+        if ((this.categoryInput as HTMLInputElement).value !== this.categoryOriginalData) {
+            if (this.params && 'id' in this.params) {
+                try {
+                    const updateCategoryResult: CategoryResponseType = await OperationsService.updateCategory(`/${this.category}/${this.params.id}`, {
+                        title: (this.categoryInput as HTMLInputElement).value,
+                    });
+                    if (updateCategoryResult) {
+                        location.href = `#/${this.category}s`;
+                    } else {
+                        location.href = '#/operations';
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
             }
         } else {
             location.href = `#/${this.category}s`;

@@ -1,18 +1,18 @@
 import {OperationsService} from "../services/operations-service";
 import {FilterUtils} from "../utils/filter-utils";
-import Chart, {ChartConfiguration} from "chart.js";
+import Chart, {ChartConfiguration, ChartType} from "chart.js/auto";
 import {OperationsResponseType, OperationsSuccessResponse} from "../types/operations-response.type";
 
 export class Main {
     readonly filtersContainer: HTMLElement | null;
-    readonly defaultData: any;
-    readonly configIncomes: ChartConfiguration;
-    readonly configExpenses: ChartConfiguration;
-    readonly ctxIncomes: CanvasRenderingContext2D;
-    readonly ctxExpenses: CanvasRenderingContext2D;
-    readonly getContext: CanvasRenderingContext2D | null;
-    readonly myPieChartIncomes: Chart;
-    readonly myPieChartExpenses: Chart;
+    readonly defaultData: ChartConfiguration<'pie'>; // Указываем тип диаграммы
+    readonly configIncomes: ChartConfiguration<'pie'>;
+    readonly configExpenses: ChartConfiguration<'pie'>;
+    readonly ctxIncomes: CanvasRenderingContext2D | null;
+    readonly ctxExpenses: CanvasRenderingContext2D | null;
+    readonly getContext: CanvasRenderingContext2D | null = null;
+    readonly myPieChartIncomes: Chart<'pie'>; // Указываем тип диаграммы
+    readonly myPieChartExpenses: Chart<'pie'>; // Указываем тип диаграммы
 
     constructor() {
         this.filtersContainer = document.getElementById('filters-container'); // Родительский контейнер кнопок фильтра
@@ -23,25 +23,19 @@ export class Main {
             );
         }
 
-        if (!localStorage.getItem('accessToken')) {
-            return location.href = '#/login';
-        }
-
         this.defaultData = {
-            labels: ["Нет данных"], // Метка для отсутствия данных
-            datasets: [
-                {
-                    label: "Данные отсутствуют",
-                    data: [1], // Заглушка для отображения
-                    backgroundColor: ["#d3d3d3"], // Светлый цвет
-                    borderWidth: 1
-                }
-            ]
-        };
-
-        this.configIncomes = {
-            type: 'pie',
-            data: this.defaultData, // Подключение данных
+            type: 'pie', // Указываем тип диаграммы
+            data: {
+                labels: ["Нет данных"], // Метка для отсутствия данных
+                datasets: [
+                    {
+                        label: "Данные отсутствуют",
+                        data: [1], // Заглушка для отображения
+                        backgroundColor: ["#d3d3d3"], // Светлый цвет
+                        borderWidth: 1
+                    }
+                ]
+            },
             options: {
                 responsive: true, // Диаграмма адаптируется к размерам контейнера
                 plugins: {
@@ -52,34 +46,41 @@ export class Main {
                         enabled: false, // Отключаем подсказки для заглушки
                     },
                 }
-            },
+            }
+        };
+
+        this.configIncomes = {
+            type: 'pie', // Указываем тип диаграммы
+            data: this.defaultData.data, // Подключение данных
+            options: this.defaultData.options
         };
 
         this.configExpenses = {
-            type: 'pie',
-            data: this.defaultData, // Подключение данных
-            options: {
-                responsive: true, // Диаграмма адаптируется к размерам контейнера
-                plugins: {
-                    legend: {
-                        position: 'top', // Положение легенды
-                    },
-                    tooltip: {
-                        enabled: false,
-                    },
-                }
-            },
+            type: 'pie', // Указываем тип диаграммы
+            data: this.defaultData.data, // Подключение данных
+            options: this.defaultData.options
         };
+
         // Инициализация диаграммы
-        this.ctxIncomes = (document.getElementById('pieChartIncomes') as HTMLCanvasElement).getContext('2d');
-        this.ctxExpenses = (document.getElementById('pieChartExpenses') as HTMLCanvasElement).getContext('2d');
-        this.myPieChartIncomes = new Chart(this.ctxIncomes, this.configIncomes);
-        this.myPieChartExpenses = new Chart(this.ctxExpenses, this.configExpenses);
+        const incomesCanvas = document.getElementById('pieChartIncomes') as HTMLCanvasElement | null;
+        const expensesCanvas = document.getElementById('pieChartExpenses') as HTMLCanvasElement | null;
+
+        this.ctxIncomes = incomesCanvas ? incomesCanvas.getContext('2d') : null;
+        this.ctxExpenses = expensesCanvas ? expensesCanvas.getContext('2d') : null;
+
+        // Инициализация диаграмм
+        this.myPieChartIncomes = new Chart(this.ctxIncomes!, this.configIncomes);
+        this.myPieChartExpenses = new Chart(this.ctxExpenses!, this.configExpenses);
 
         this.getOperations('today').then();
 
         // Инициализация datepicker
         FilterUtils.initializeDatepickers();
+
+        if (!localStorage.getItem('accessToken')) {
+            location.href = '#/login';
+            return;
+        }
     }
 
     private async getOperations(period: string): Promise<void> {
@@ -103,8 +104,8 @@ export class Main {
     }
 
     private updateCharts(operationsResult: OperationsSuccessResponse[]): void {
-        const incomeCategories: {} = {};
-        const expenseCategories: {} = {};
+        const incomeCategories: Record<string, number> = {};
+        const expenseCategories: Record<string, number> = {};
 
         operationsResult.forEach((operation: OperationsSuccessResponse): void => {
             if (operation.type === "income") {
@@ -122,9 +123,9 @@ export class Main {
     }
 
     // Метод для обновления диаграмм
-    private updateChart(chart: any, categoryData: Record<string, number>): void {
+    private updateChart(chart: Chart<'pie'>, categoryData: Record<string, number>): void {
         const labels: string[] = Object.keys(categoryData);
-        const data: unknown[] = Object.values(categoryData);
+        const data: number[] = Object.values(categoryData);
 
         if (labels.length === 0 || data.length === 0) {
             // Если данных нет, отображаем заглушку
@@ -139,7 +140,9 @@ export class Main {
                     },
                 ],
             };
-            chart.options.plugins.tooltip.enabled = false; // Отключаем всплывающие подсказки для заглушки
+            if (chart.options.plugins && chart.options.plugins.tooltip) {
+                chart.options.plugins.tooltip.enabled = false; // Отключаем всплывающие подсказки для заглушки
+            }
         } else {
             // Если данные есть, обновляем график
             chart.data = {
@@ -155,7 +158,9 @@ export class Main {
                     },
                 ],
             };
-            chart.options.plugins.tooltip.enabled = true; // Включаем всплывающие подсказки для реальных данных
+            if (chart.options.plugins && chart.options.plugins.tooltip) {
+                chart.options.plugins.tooltip.enabled = true; // Включаем всплывающие подсказки для реальных данных
+            }
         }
         chart.update();
     }

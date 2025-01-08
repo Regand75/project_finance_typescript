@@ -1,27 +1,40 @@
 import {OperationsService} from "../../services/operations-service";
 import {UrlUtils as urlUtils} from "../../utils/url-utils";
 import {CommonUtils} from "../../utils/common-utils";
+import {CategoryResponseType} from "../../types/categories-response.type";
 
 export class CategoryCreating {
+    readonly titleNewCategoryInput: HTMLElement | null;
+    private creatingCategoryElement: HTMLElement | null;
+    readonly category: string | undefined;
+
     constructor() {
         this.titleNewCategoryInput = document.getElementById('title-new-category');
         CommonUtils.initBackButton();
         this.creatingCategoryElement = document.getElementById('creating-category');
-        this.titleNewCategoryInput.addEventListener('input', this.activeButton.bind(this));
-        this.creatingCategoryElement.addEventListener('click', this.creatingCategory.bind(this));
-        this.category = urlUtils.getUrlHashPart();
+        if (this.titleNewCategoryInput) {
+            this.titleNewCategoryInput.addEventListener('input', this.activeButton.bind(this));
+        }
+        if (this.creatingCategoryElement) {
+            this.creatingCategoryElement.addEventListener('click', this.creatingCategory.bind(this));
+        }
+        if (this.category) {
+            this.category = urlUtils.getUrlHashPart();
+        }
     }
 
-    activeButton() {
-        if (this.titleNewCategoryInput.value !== '') {
-            this.creatingCategoryElement.classList.remove('disabled');
-        } else {
-            this.creatingCategoryElement.classList.add('disabled');
+    private activeButton(): void {
+        if (this.creatingCategoryElement) {
+            if ((this.titleNewCategoryInput as HTMLSelectElement).value !== '') {
+                this.creatingCategoryElement.classList.remove('disabled');
+            } else {
+                this.creatingCategoryElement.classList.add('disabled');
+            }
         }
     };
 
-    async creatingCategory() {
-        let partUrl = ''
+    private async creatingCategory(): Promise<void> {
+        let partUrl: string = ''
         if (this.category === 'income') {
             partUrl = '/income';
         } else if (this.category === 'expense') {
@@ -29,13 +42,12 @@ export class CategoryCreating {
         }
 
         try {
-            const operationsResult = await OperationsService.createCategory(partUrl, {
-                title: this.titleNewCategoryInput.value,
+            const operationsResult: CategoryResponseType = await OperationsService.createCategory(partUrl, {
+                title: (this.titleNewCategoryInput as HTMLSelectElement).value,
             });
             if (operationsResult) {
                 location.href = `#/${this.category}s`;
-            } else if (operationsResult.error) {
-                console.log(operationsResult.error);
+            } else {
                 location.href = '#/operations';
             }
 

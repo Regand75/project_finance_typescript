@@ -1,5 +1,5 @@
 import {BalanceService} from "../services/balance-service";
-import {BalanceResponseType} from "../types/balance-response.type";
+import {BalanceResponseType, BalanceSuccessType} from "../types/balance-response.type";
 
 export class Balance {
     private balanceElement: HTMLElement | null;
@@ -13,7 +13,7 @@ export class Balance {
         try {
             const balanceResult: BalanceResponseType | false = await BalanceService.getBalance();
             if (balanceResult) {
-                this.updateBalance(balanceResult);
+                this.updateBalance(balanceResult as BalanceSuccessType);
             } else {
                 location.href = '#/';
             }
@@ -22,7 +22,7 @@ export class Balance {
         }
     }
 
-    private updateBalance(balance: BalanceResponseType): void {
+    private updateBalance(balance: BalanceSuccessType): void {
         if (this.balanceElement) {
             this.balanceElement.innerText = balance.balance + '$';
         }

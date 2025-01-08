@@ -11,11 +11,11 @@ export class OperationsList {
     readonly creatingExpenseElement: HTMLElement | null;
 
     constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
-        const { params }: Record<string, string> | null = parseHash();
+        const { params } = parseHash();
         this.params = params;
 
         this.recordsElement = document.getElementById('records');
-        this.recordsElement = document.getElementById('filters-container'); // Родительский контейнер кнопок фильтра
+        this.filtersContainer = document.getElementById('filters-container'); // Родительский контейнер кнопок фильтра
 
         if (this.filtersContainer) {
             this.filtersContainer.addEventListener('click', event =>
@@ -43,7 +43,7 @@ export class OperationsList {
         FilterUtils.initializeDatepickers();
     }
 
-    public async getOperations(period): Promise<void> {
+    public async getOperations(period: string): Promise<void> {
         try {
             const operationsResult: OperationsResponseType = await OperationsService.getOperations(`?period=${period}`);
             if (operationsResult && (operationsResult as OperationsSuccessResponse[]).length > 0) {

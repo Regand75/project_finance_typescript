@@ -10,7 +10,10 @@ export class ModalManager {
     }
 
     public static hideModal(): void {
-        document.getElementById("modal-overlay").classList.remove("active");
+        const modalOverlay: HTMLElement | null = document.getElementById("modal-overlay");
+        if (modalOverlay) {
+            modalOverlay.classList.remove("active");
+        }
         document.body.style.overflow = 'auto';
     }
 

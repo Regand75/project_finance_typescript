@@ -7,17 +7,18 @@ export class HttpUtils {
             error: false,
             response: null,
         };
-        const params: RequestInit  = {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
         };
         let token: string | null = localStorage.getItem(AuthUtils.accessTokenKey);
         if (token) {
-            params.headers as Record<string, string>['x-auth-token'] = token;
+            headers['x-auth-token'] = token;
         }
+        const params: RequestInit = {
+            method: method,
+            headers: headers, // Устанавливаем headers здесь
+        };
         if (body) {
             params.body = JSON.stringify(body);
         }
@@ -36,14 +37,14 @@ export class HttpUtils {
             if (response.status === 401 && retries > 0) {
                 if (!token) {
                     location.href = '#/login';
-                    return;
+                    return result;
                 } else {
                     const updateTokenResult: boolean = await AuthUtils.processUnauthorizedResponse();
                     if (updateTokenResult) {
                         return await this.request(url, method, body, retries - 1);
                     } else {
                         location.href = '#/login';
-                        return ;
+                        return result;
                     }
                 }
             }

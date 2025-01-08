@@ -27,9 +27,9 @@ export class FilterUtils {
         });
     }
 
-    private static convertDate(dateString): string {
+    private static convertDate(dateString: string): string {
         // Разделяем строку по точке
-        const [day, month, year]: [string, string, string] = dateString.split('.');
+        const [day, month, year] = dateString.split('.');
         // Возвращаем дату в формате год-месяц-день
         return `${year}-${month}-${day}`;
     }
@@ -43,7 +43,7 @@ export class FilterUtils {
             if (filterIntervalHiddenElement) {
                 filterIntervalHiddenElement.classList.add('filter-interval-hidden');
             }
-            const period: string = target.getAttribute('data-period');
+            const period: string | null = target.getAttribute('data-period');
 
             if (period === 'interval') {
                 let inputDateFromValue: string | null = null;
@@ -88,7 +88,7 @@ export class FilterUtils {
                                     `?period=${period}&dateFrom=${convertedFrom}&dateTo=${convertedTo}`
                                 );
                                 // Проверяем, является ли результат ошибкой
-                                if ('error' in operationsResult && operationsResult.error) {
+                                if (operationsResult && 'error' in operationsResult && operationsResult.error) {
                                     console.error('Error:', operationsResult.message);
                                     location.href = '#/';
                                 } else {
@@ -118,7 +118,7 @@ export class FilterUtils {
                             `?period=${period}&dateFrom=${convertedFromValue}&dateTo=${convertedToValue}`
                         );
                         // Проверяем, является ли результат ошибкой
-                        if ('error' in operationsResult && operationsResult.error) {
+                        if (operationsResult && 'error' in operationsResult && operationsResult.error) {
                             console.error('Error:', operationsResult.message);
                             location.href = '#/';
                         } else {
@@ -138,7 +138,7 @@ export class FilterUtils {
                 try {
                     const operationsResult: OperationsResponseType = await OperationsService.getOperations(`?period=${period}`);
                     // Проверяем, является ли результат ошибкой
-                    if ('error' in operationsResult && operationsResult.error) {
+                    if (operationsResult && 'error' in operationsResult && operationsResult.error) {
                         console.error('Error:', operationsResult.message);
                         location.href = '#/';
                     } else {

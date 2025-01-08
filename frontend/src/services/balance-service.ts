@@ -4,7 +4,7 @@ import {BalanceResponseType} from "../types/balance-response.type";
 import {ResultRequestType} from "../types/result-request.type";
 
 export class BalanceService {
-    public static async getBalance(): Promise<BalanceResponseType | false> {
+    public static async getBalance(): Promise<BalanceResponseType> {
         const result: ResultRequestType<BalanceResponseType> = await HttpUtils.request<BalanceResponseType>(config.host + '/balance');
         if (result.error) {
             if (result.response && 'error' in result.response && result.response.error) {

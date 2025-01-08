@@ -1,7 +1,19 @@
 import {ModalManager} from "../modal";
 import {OperationsService} from "../../services/operations-service";
+import {
+    CategoriesResponseType,
+    CategoryErrorResponse,
+    CategorySuccessResponse
+} from "../../types/categories-response.type";
+import {OperationsResponseType, OperationsSuccessResponse} from "../../types/operations-response.type";
+import {ParamsType} from "../../types/params.type";
 
 export class Expenses {
+    readonly buttonNoDeleteElement: HTMLElement | null;
+    readonly buttonDeleteElement: HTMLElement | null;
+    readonly modalOverlay: HTMLElement | null;
+    private params: ParamsType | null;
+
     constructor() {
         this.buttonNoDeleteElement = document.getElementById("no-delete");
         this.buttonDeleteElement = document.getElementById("modal-delete");
@@ -19,13 +31,12 @@ export class Expenses {
         this.params = null;
     }
 
-    async getExpenses(params) {
+    private async getExpenses(params: string): Promise<void> {
         try {
-            const expensesResult = await OperationsService.getCategories(`/${params}`);
-            if (expensesResult && expensesResult.length > 0) {
-                this.showExpenses(expensesResult);
-            } else if (expensesResult.error) {
-                console.log(expensesResult.error);
+            const expensesResult: CategoriesResponseType = await OperationsService.getCategories(`/${params}`);
+            if (expensesResult && (expensesResult as CategorySuccessResponse[]).length > 0) {
+                this.showExpenses(expensesResult as CategorySuccessResponse[]);
+            } else {
                 location.href = '#/operations';
             }
         } catch (error) {
@@ -33,21 +44,20 @@ export class Expenses {
         }
     }
 
-    async deleteCategoryExpense() {
-        this.params = JSON.parse(this.modalOverlay.dataset.params); // получаем id и название категории, которую надо удалить
+    private async deleteCategoryExpense(): Promise<void> {
+        if (this.modalOverlay && this.modalOverlay.dataset.params) {
+            this.params = JSON.parse(this.modalOverlay.dataset.params); // получаем id и название категории, которую надо удалить
+        }
         try {
-            const operationsResult = await OperationsService.getOperations(`?period=all`); // получаем все операции для последующего удаления совпадающих с удаляемой категорией
+            const operationsResult: OperationsResponseType = await OperationsService.getOperations(`?period=all`); // получаем все операции для последующего удаления совпадающих с удаляемой категорией
             if (operationsResult) {
-                const operationsToDeleteResult = operationsResult.filter(item => item.category === this.params.category); // находим все записи, связанные с удаляемой категорией
+                const operationsToDeleteResult: OperationsSuccessResponse[] = (operationsResult as OperationsSuccessResponse[]).filter((item: OperationsSuccessResponse): boolean => item.category === (this.params as ParamsType).category); // находим все записи, связанные с удаляемой категорией
                 if (operationsToDeleteResult) {
-                    const deleteCategoryResult = await OperationsService.deleteCategory(`/expense/${this.params.id}`); // удаляем категорию
+                    const deleteCategoryResult: CategoryErrorResponse | false = await OperationsService.deleteCategory(`/expense/${(this.params as ParamsType).id}`); // удаляем категорию
                     if (deleteCategoryResult) {
                         for (const item of operationsToDeleteResult) {
                             try {
-                                const deleteOperationResult = await OperationsService.deleteOperation(`/${item.id}`); // удаляем записи, связанные с удаленной категорией
-                                if (deleteOperationResult) {
-                                    this.flagDelete = true;
-                                }
+                                await OperationsService.deleteOperation(`/${item.id}`); // удаляем записи, связанные с удаленной категорией
                             } catch (error) {
                                 console.log(error);
                             }
@@ -55,13 +65,11 @@ export class Expenses {
                         ModalManager.hideModal();
                         location.href = '#/expenses';
                         console.log('DELETE CATEGORY');
-                    } else if (deleteCategoryResult.error) {
-                        console.log(deleteCategoryResult.error);
+                    } else {
                         location.href = '#/operations';
                     }
                 }
-            } else if (operationsResult.error) {
-                console.log(operationsResult.error);
+            } else {
                 location.href = '#/';
             }
         } catch (error) {
@@ -69,45 +77,47 @@ export class Expenses {
         }
     }
 
-    showExpenses(expenses) {
-        const expensesContainerElement = document.getElementById("expenses-container");
-        const blockAddingElement = document.getElementById("block-adding");
-        expensesContainerElement.innerHTML = '';
-        expensesContainerElement.appendChild(blockAddingElement);
-        expenses.forEach((expense) => {
-            const div = this.createExpenseBlock(expense.id, expense.title);
-            expensesContainerElement.insertBefore(div, blockAddingElement);
-        });
+    private showExpenses(expenses: CategorySuccessResponse[]): void {
+        const expensesContainerElement: HTMLElement | null = document.getElementById("expenses-container");
+        const blockAddingElement: HTMLElement | null = document.getElementById("block-adding");
+        if (expensesContainerElement && blockAddingElement) {
+            expensesContainerElement.innerHTML = '';
+            expensesContainerElement.appendChild(blockAddingElement);
+            expenses.forEach((expense: CategorySuccessResponse): void => {
+                const div: HTMLElement = this.createExpenseBlock(expense.id.toString(), expense.title);
+                expensesContainerElement.insertBefore(div, blockAddingElement);
+            });
+        }
     }
 
-    createExpenseBlock(id, title, editHref = '#/expense/edit') {
+    createExpenseBlock(id: string, title: string, editHref: string = '#/expense/edit'): HTMLElement {
         // Создаем основной контейнер
-        const block = document.createElement('div');
+        const block: HTMLElement = document.createElement('div');
         block.className = 'expense-block border bg-border-custom rounded';
         block.setAttribute('data-id', id);
 
         // Создаем заголовок блока
-        const titleDiv = document.createElement('div');
+        const titleDiv: HTMLElement = document.createElement('div');
         titleDiv.className = 'expense-title';
 
-        const titleText = document.createElement('h3');
+        const titleText: HTMLElement = document.createElement('h3');
         titleText.className = 'expense-title-text';
         titleText.textContent = title;
 
         titleDiv.appendChild(titleText);
 
         // Создаем контейнер для кнопок
-        const activeDiv = document.createElement('div');
+        const activeDiv: HTMLElement = document.createElement('div');
         activeDiv.className = 'expense-active d-flex';
 
         // Кнопка "Редактировать"
-        const editButton = document.createElement('a');
+        const editButton: HTMLAnchorElement = document.createElement('a');
         editButton.href = `${editHref}?id=${id}`;
         editButton.className = 'expense-edit btn btn-primary btn-custom';
         editButton.textContent = 'Редактировать';
 
         // Кнопка "Удалить"
-        const deleteButton = document.createElement('button');
+        const deleteButton: HTMLButtonElement = document.createElement('button');
         deleteButton.type = 'button';
         deleteButton.className = 'expense-delete btn btn-danger btn-custom';
         deleteButton.textContent = 'Удалить';

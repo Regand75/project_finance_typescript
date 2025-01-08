@@ -33,7 +33,7 @@ export class AuthService {
                 this.logError(result.response);
             }
             return false;
-        } else if ('user' in result.response) {
+        } else if (result.response && 'user' in result.response) {
             if (
                 result.response.user.id &&
                 result.response.user.email &&

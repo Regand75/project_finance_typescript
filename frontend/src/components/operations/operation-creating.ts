@@ -2,7 +2,7 @@ import {OperationsService} from "../../services/operations-service";
 import {CommonUtils} from "../../utils/common-utils";
 import {FilterUtils} from "../../utils/filter-utils";
 import {FormFieldType} from "../../types/form-field.type";
-import {CategoriesResponseType} from "../../types/categories-response.type";
+import {CategoriesResponseType, CategorySuccessResponse} from "../../types/categories-response.type";
 import {OperationRequest, OperationResponseType} from "../../types/operations-response.type";
 
 export class OperationCreating {
@@ -13,7 +13,7 @@ export class OperationCreating {
     private fields: FormFieldType[] = [];
 
     constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
-        const { params }: Record<string, string> | null = parseHash();
+        const { params } = parseHash();
         this.params = params;
         this.typeElement = document.getElementById('typeSelect');
         this.categoryElement = document.getElementById('categorySelect');
@@ -64,7 +64,7 @@ export class OperationCreating {
             }
         });
 
-        if ('category' in this.params) {
+        if (this.params && 'category' in this.params) {
             this.getCategories(this.params.category).then();
         }
     }
@@ -72,9 +72,9 @@ export class OperationCreating {
     private async getCategories(categoryType: string): Promise<void> {
         try {
             const categoriesResult: CategoriesResponseType = await OperationsService.getCategories(`/${categoryType}`);
-            if (categoriesResult) {
+            if (categoriesResult && (categoriesResult as CategorySuccessResponse[]).length > 0) {
                 this.showTypeSelects();
-                this.showCategorySelect(categoriesResult);
+                this.showCategorySelect(categoriesResult as CategorySuccessResponse[]);
             } else {
                 location.href = '#/operations';
             }
@@ -86,8 +86,8 @@ export class OperationCreating {
     private async changeCategorySelect(): Promise<void> {
         try {
             const categoriesResult: CategoriesResponseType = await OperationsService.getCategories(`/${(this.typeElement as HTMLSelectElement).value}`);
-            if (categoriesResult && (categoriesResult as CategoriesResponseType[]).length > 0) {
-                this.showCategorySelect(categoriesResult);
+            if (categoriesResult && (categoriesResult as CategorySuccessResponse[]).length > 0) {
+                this.showCategorySelect(categoriesResult as CategorySuccessResponse[]);
             } else {
                 location.href = '#/operations';
             }
@@ -97,7 +97,7 @@ export class OperationCreating {
     }
 
     private showTypeSelects(): void {
-        if ('category' in this.params) {
+        if (this.params && 'category' in this.params) {
             for (let i = 0; i < (this.typeElement as HTMLSelectElement).options.length; i++) {
                 if ((this.typeElement as HTMLSelectElement).options[i].value === this.params.category) {
                     (this.typeElement as HTMLSelectElement).options[i].selected = true;
@@ -106,13 +106,13 @@ export class OperationCreating {
         }
     }
 
-    private showCategorySelect(categoryList): void {
+    private showCategorySelect(categoryList: CategorySuccessResponse[]): void {
         if (this.categoryElement) {
             this.categoryElement.innerHTML = ''; // очищаем select
         }
-        categoryList.forEach(item => {
+        categoryList.forEach((item: CategorySuccessResponse) => {
             const option:HTMLOptionElement = document.createElement("option");
-            option.value = item.id;
+            option.value = item.id.toString();
             option.innerText = item.title;
             if (this.categoryElement) {
                 this.categoryElement.appendChild(option);
@@ -150,14 +150,14 @@ export class OperationCreating {
 
         if (this.validateForm()) {
             let type: string = '';
-            let amount: number;
+            let amount: number | null = null;
             let date: string = '';
             let comment: string = '';
-            let categoryId: number;
+            let categoryId: number | null = null;
             if (this.typeElement) {
                 type = (this.typeElement as HTMLSelectElement).value;
             }
-            const amountField: FormFieldType = this.fields.find((item: FormFieldType): boolean => item.name === 'amount')
+            const amountField: FormFieldType | undefined = this.fields.find((item: FormFieldType): boolean => item.name === 'amount')
             if (amountField && amountField.element) {
                 amount = parseInt(amountField.element.value);
             }

@@ -15,13 +15,13 @@ import {RouteType} from "./types/route.type";
 import {UserInfoType} from "./types/user-info.type";
 
 export class Router {
-    private titlePageElement: HTMLElement | null;
-    private contentPageElement: HTMLElement | null;
+    readonly titlePageElement: HTMLElement | null;
+    readonly contentPageElement: HTMLElement | null;
     private toggleElement: HTMLElement | null;
     private activeBlockElement: HTMLElement | null;
-    private burgerElement: HTMLElement | null;
-    private sidebarElement: HTMLElement | null;
-    private dropdownMenuElement: HTMLElement | null;
+    private burgerElement: HTMLElement | null = null;
+    private sidebarElement: HTMLElement | null = null;
+    private dropdownMenuElement: HTMLElement | null = null;
     private listElement: HTMLElement | null;
     private collapsedSvgElement: HTMLElement | null;
     private currentRoute: string;
@@ -242,7 +242,7 @@ export class Router {
 
     private parseHash(): {routeWithHash: string, params: Record<string, string> | null} {
         const hash: string = window.location.hash; // Получаем hash из адресной строки
-        const [routeWithHash, queryString]: [string, string | undefined] = hash.split('?'); // Разделяем на маршрут и параметры
+        const [routeWithHash, queryString]: [string, string | undefined] = hash.split('?') as [string, string | undefined]; // Разделяем на маршрут и параметры
 
         const params: Record<string, string> | null = queryString ? Object.fromEntries(new URLSearchParams(queryString).entries()) : null; // Если параметры есть, создаем объект URLSearchParams
 
@@ -253,7 +253,7 @@ export class Router {
     }
 
     private async activateRoute(): Promise<void> {
-        const { routeWithHash }: string = this.parseHash(); // Получаем текущий маршрут
+        const { routeWithHash } = this.parseHash(); // Получаем текущий маршрут
         const previousRoute: string = this.currentRoute; // Сохраняем предыдущий маршрут
         this.currentRoute = routeWithHash; // Обновляем текущий маршрут
         // Находим объект маршрута для предыдущего
@@ -270,9 +270,8 @@ export class Router {
             }
         }
 
-
         const newRoute: RouteType | undefined = this.routes.find((item: RouteType): boolean => {
-            const {routeWithHash}: string = this.parseHash(); //получаем маршрут без параметров
+            // const {routeWithHash}: string = this.parseHash(); //получаем маршрут без параметров
             return item.route === routeWithHash;
         });
 
@@ -340,18 +339,20 @@ export class Router {
                 newRoute.load();
             }
         } else {
-            window.location = '#/login';
+            location.href = '#/login';
             console.log('No route found');
         }
     }
 
-    private activateMenuItem(route): void {
-        document.querySelectorAll('.nav-link').forEach((link: HTMLElement): void => {
-            const href: string = link.getAttribute('href');
-            if ((route.route.includes(href) && href !== '#/') || (route.route === "#/" && href === '#/')) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
+    private activateMenuItem(route: RouteType): void {
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href: string | null = link.getAttribute('href');
+            if (href) {
+                if ((route.route.includes(href) && href !== '#/') || (route.route === "#/" && href === '#/')) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
             }
             if (this.toggleElement && this.activeBlockElement && this.listElement && this.collapsedSvgElement) {
                 if (route.route.includes('#/incomes') || route.route.includes('#/expenses')) {

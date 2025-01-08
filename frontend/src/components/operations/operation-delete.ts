@@ -8,7 +8,7 @@ export class OperationDelete {
     readonly buttonDeleteElement: HTMLElement | null;
 
     constructor(parseHash: () => { routeWithHash: string; params: Record<string, string> | null }) {
-        const { params }: Record<string, string> | null = parseHash();
+        const { params } = parseHash();
         this.params = params;
         this.buttonNoDeleteElement = document.getElementById('no-delete');
         this.buttonDeleteElement = document.getElementById("modal-delete");

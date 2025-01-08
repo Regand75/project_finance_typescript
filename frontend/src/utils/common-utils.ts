@@ -2,7 +2,7 @@ export class CommonUtils {
 
     // конвертируем дату в формат yyyy-mm-dd
     public static convertDate(dateString: string): string {
-        const [day, month, year]: [string, string, string] = dateString.split('.');
+        const [day, month, year] = dateString.split('.');
         return `${year}-${month}-${day}`;
     }
 

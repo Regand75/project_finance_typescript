@@ -1,4 +1,4 @@
-import {Router} from "./router.ts";
+import {Router} from "./router";
 
 class App {
     constructor() {
