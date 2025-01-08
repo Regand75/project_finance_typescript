@@ -1,5 +1,5 @@
 import {HttpUtils} from "../utils/http-utils";
-import config from "../../config/config";
+import config from "../config/config";
 import {BalanceResponseType} from "../types/balance-response.type";
 import {ResultRequestType} from "../types/result-request.type";
 

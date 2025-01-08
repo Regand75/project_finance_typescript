@@ -16,6 +16,7 @@ export class Balance {
                 this.updateBalance(balanceResult as BalanceSuccessType);
             } else {
                 location.href = '#/';
+                return;
             }
         } catch (error) {
             console.log(error);

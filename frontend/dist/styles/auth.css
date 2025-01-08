@@ -1,0 +1,57 @@
+.content-center-auth {
+    height: 100vh;
+    align-content: center;
+}
+
+a {
+    text-decoration: underline;
+}
+
+.form-logo {
+    margin-bottom: 60px;
+}
+
+.form-signin .container {
+    max-width: 421px;
+    margin-left: auto;
+}
+
+.input-group {
+    margin-bottom: 10px;
+}
+
+.input-group input {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    line-height: 24px;
+}
+
+.input-group input::placeholder {
+    color: #6C757D;
+}
+
+.form-check {
+    margin-bottom: 10px;
+}
+
+.form-check-label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    line-height: 23px;
+}
+
+.form-button {
+    font-family: "Roboto-Medium", sans-serif;
+    font-weight: 500;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.form-text {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    line-height: 14px;
+}
+
+
+

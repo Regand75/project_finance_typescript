@@ -1,7 +1,7 @@
 import {HttpUtils} from "../utils/http-utils";
-import config from "../../config/config";
 import {LoginResponseType, SignupResponseType} from "../types/auth-response.type";
 import {ResultRequestType} from "../types/result-request.type";
+import config from "../config/config";
 
 export class AuthService {
 

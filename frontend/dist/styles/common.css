@@ -1,0 +1,157 @@
+@font-face {
+    font-family: "Roboto";
+    src: url("../static/fonts/Roboto-Regular.ttf");
+}
+
+@font-face {
+    font-family: "Roboto-Medium";
+    src: url("../static/fonts/Roboto-Medium.ttf");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Roboto-Bold";
+    src: url("../static/fonts/Roboto-Bold.ttf");
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: "Inder-Bold";
+    src: url("../static/fonts/Inter-Bold.otf");
+    font-weight: 700;
+}
+
+body {
+    font-family: "Roboto", sans-serif;
+    overflow: auto;
+}
+
+.container {
+    margin-left: 0;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.ms-custom-section {
+    margin-left: 219px;
+}
+
+.btn-custom {
+    padding: 11px 16px;
+    font-family: 'Roboto-Medium', sans-serif;
+    font-size: 14px;
+    line-height: 16px;
+}
+
+.fs-12 {
+    font-size: 12px;
+}
+
+.fs-14 {
+    font-size: 14px;
+}
+
+.fs-15 {
+    font-size: 15px;
+}
+
+.title {
+    font-family: "Roboto-Medium", sans-serif;
+    font-size: 40px;
+    line-height: 47px;
+    color: #052c65;
+    margin-bottom: 20px;
+}
+
+.title-block {
+    padding: 100px 0 20px 0;
+}
+
+.bg-border-custom {
+    border-color: #ced4da;
+}
+
+.filter-block input {
+    width: 100px;
+    text-align: center;
+    border: none;
+}
+
+.filter-interval-hidden {
+    display: none !important;
+}
+
+.filter-block input:hover {
+    cursor: pointer;
+    outline: none;
+}
+
+.filter-block input:focus {
+    outline: none;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-window {
+    background: #fff;
+    padding: 40px;
+    max-width: 530px;
+    width: 100%;
+}
+
+.modal-text {
+    font-family: 'Roboto-Medium', sans-serif;
+    font-size: 20px;
+    line-height: 23px;
+    text-align: center;
+    color: #290661;
+}
+
+.modal-active {
+    gap: 12px;
+}
+
+.modal-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.container .input-custom {
+    padding: 7px 16px;
+    margin-bottom: 10px;
+    width: 397px;
+    font-size: 15px;
+    line-height: 24px;
+    color: #000000;
+}
+
+.container .input-custom::placeholder {
+    color: #6C757D;
+}
+
+.burger {
+    position: fixed;
+    top: 0;
+}
+
+.burger-margin {
+    margin-left: 219px;
+}
+

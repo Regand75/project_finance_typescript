@@ -40,8 +40,8 @@ export class Router {
             {
                 route: '#/',
                 title: 'Главная',
-                template: 'src/templates/pages/main.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/main.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new Main();
                     new Balance();
@@ -55,7 +55,7 @@ export class Router {
             {
                 route: '#/login',
                 title: 'Вход',
-                template: 'src/templates/pages/auth/login.html',
+                template: '/templates/pages/auth/login.html',
                 useLayout: '',
                 load: () => {
                     new Form('login');
@@ -67,7 +67,7 @@ export class Router {
             {
                 route: '#/signup',
                 title: 'Регистрация',
-                template: 'src/templates/pages/auth/signup.html',
+                template: '/templates/pages/auth/signup.html',
                 useLayout: '',
                 load: () => {
                     new Form('signup');
@@ -85,8 +85,8 @@ export class Router {
             {
                 route: '#/operations',
                 title: 'Доходы и расходы',
-                template: 'src/templates/pages/operations/list.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/operations/list.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new OperationsList(this.parseHash.bind(this));
                     new Balance();
@@ -100,8 +100,8 @@ export class Router {
             {
                 route: '#/operations/edit',
                 title: 'Доходы и расходы',
-                template: 'src/templates/pages/operations/edit.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/operations/edit.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new OperationEdit(this.parseHash.bind(this));
                     new Balance();
@@ -115,8 +115,8 @@ export class Router {
             {
                 route: '#/operations/creating',
                 title: 'Доходы и расходы',
-                template: 'src/templates/pages/operations/creating.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/operations/creating.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new OperationCreating(this.parseHash.bind(this));
                     new Balance();
@@ -130,8 +130,8 @@ export class Router {
             {
                 route: '#/operations/delete',
                 title: 'Доходы и расходы',
-                template: 'src/templates/pages/operations/list.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/operations/list.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new OperationDelete(this.parseHash.bind(this));
                     new Balance();
@@ -145,8 +145,8 @@ export class Router {
             {
                 route: '#/incomes',
                 title: 'Доходы',
-                template: 'src/templates/pages/incomes/incomes.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/incomes/incomes.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new Incomes();
                     new Balance();
@@ -160,8 +160,8 @@ export class Router {
             {
                 route: '#/income/edit',
                 title: 'Редактирование доходов',
-                template: 'src/templates/pages/incomes/edit.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/incomes/edit.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new CategoryEdit(this.parseHash.bind(this));
                     new Balance();
@@ -175,8 +175,8 @@ export class Router {
             {
                 route: '#/income/creating',
                 title: 'Создание дохода',
-                template: 'src/templates/pages/incomes/creating.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/incomes/creating.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new CategoryCreating();
                     new Balance();
@@ -190,8 +190,8 @@ export class Router {
             {
                 route: '#/expenses',
                 title: 'Расходы',
-                template: 'src/templates/pages/expenses/expenses.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/expenses/expenses.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new Expenses();
                     new Balance();
@@ -205,8 +205,8 @@ export class Router {
             {
                 route: '#/expense/edit',
                 title: 'Редактирование расходов',
-                template: 'src/templates/pages/expenses/edit.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/expenses/edit.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new CategoryEdit(this.parseHash.bind(this));
                     new Balance();
@@ -220,8 +220,8 @@ export class Router {
             {
                 route: '#/expense/creating',
                 title: 'Создание расходов',
-                template: 'src/templates/pages/expenses/creating.html',
-                useLayout: 'src/templates/layout.html',
+                template: '/templates/pages/expenses/creating.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new CategoryCreating();
                     new Balance();
@@ -262,7 +262,7 @@ export class Router {
             if (previousRouteObject.styles && previousRouteObject.styles.length > 0) {
                 // находим и удаляем старые стили
                 previousRouteObject.styles.forEach((style: string): void => {
-                    const linkElement: HTMLElement | null = document.querySelector(`link[href='src/styles/${style}']`);
+                    const linkElement: HTMLElement | null = document.querySelector(`link[href='/styles/${style}']`);
                     if (linkElement) {
                         linkElement.remove();
                     }
@@ -284,7 +284,7 @@ export class Router {
                 newRoute.styles.forEach((style: string): void => {
                     const link: HTMLLinkElement = document.createElement('link');
                     link.rel = 'stylesheet';
-                    link.href = `src/styles/${style}`;
+                    link.href = `/styles/${style}`;
                     document.head.appendChild(link);
                 });
             }

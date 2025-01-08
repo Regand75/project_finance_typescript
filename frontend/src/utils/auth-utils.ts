@@ -1,4 +1,4 @@
-import config from "../../config/config";
+import config from "../config/config";
 import {RefreshResponseType} from "../types/refresh-response.type";
 import {UserInfoType} from "../types/user-info.type";
 

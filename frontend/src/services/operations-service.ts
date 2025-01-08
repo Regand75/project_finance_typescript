@@ -1,15 +1,15 @@
 import {HttpUtils} from "../utils/http-utils";
-import config from "../../config/config";
+import config from "../config/config";
 import {
     OperationRequest,
     OperationResponseType, OperationsErrorResponse,
-    OperationsResponseType
+    OperationsResponseType, OperationsSuccessResponse
 } from "../types/operations-response.type";
 import {ResultRequestType} from "../types/result-request.type";
 import {
     CategoriesResponseType, CategoryErrorResponse,
     CategoryRequest,
-    CategoryResponseType
+    CategoryResponseType, CategorySuccessResponse
 } from "../types/categories-response.type";
 
 export class OperationsService {
@@ -31,6 +31,8 @@ export class OperationsService {
             'category' in result.response
         ) {
             return result.response; // Успешный ответ
+        } else  if ((result.response as OperationsSuccessResponse[]).length === 0) {
+            return (result.response as OperationsSuccessResponse[]);
         }
         alert('Возникла ошибка при запросе операций. Обратитесь в поддержку');
         return false;
@@ -133,6 +135,8 @@ export class OperationsService {
             'title' in result.response
         ) {
             return result.response; // Успешный ответ
+        } else  if ((result.response as CategorySuccessResponse[]).length === 0) {
+            return (result.response as CategorySuccessResponse[]);
         }
         alert('Возникла ошибка при запросе категорий. Обратитесь в поддержку');
         return false;
