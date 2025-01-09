@@ -21,18 +21,18 @@ export class OperationsService {
                 console.log('Ошибка: ', result.response.message);
             }
             return false;
-        } else if (
-            result.response &&
-            'id' in result.response &&
-            'type' in result.response &&
-            'amount' in result.response &&
-            'date' in result.response &&
-            'comment' in result.response &&
-            'category' in result.response
-        ) {
-            return result.response; // Успешный ответ
-        } else  if ((result.response as OperationsSuccessResponse[]).length === 0) {
-            return (result.response as OperationsSuccessResponse[]);
+        } else if (Array.isArray(result.response) && result.response.length > 0) {
+            // Проверяем первый объект
+            if ('id' in result.response[0] &&
+                'type' in result.response[0] &&
+                'amount' in result.response[0] &&
+                'date' in result.response[0] &&
+                'comment' in result.response[0] &&
+                'category' in result.response[0]) {
+                return result.response; // Успешный ответ
+            }
+        } else  if (Array.isArray(result.response) && result.response.length === 0) {
+            return (result.response); // Пустой массив
         }
         alert('Возникла ошибка при запросе операций. Обратитесь в поддержку');
         return false;
@@ -129,14 +129,14 @@ export class OperationsService {
                 console.log('Ошибка: ', result.response.message);
             }
             return false;
-        } else if (
-            result.response &&
-            'id' in result.response &&
-            'title' in result.response
-        ) {
-            return result.response; // Успешный ответ
-        } else  if ((result.response as CategorySuccessResponse[]).length === 0) {
-            return (result.response as CategorySuccessResponse[]);
+        } else if (Array.isArray(result.response) && result.response.length > 0) {
+            // Проверяем первый объект
+            if ('id' in result.response[0] &&
+                'title' in result.response[0]) {
+                return result.response; // Успешный ответ
+            }
+        } else  if (Array.isArray(result.response) && result.response.length === 0) {
+            return (result.response); // Пустой массив
         }
         alert('Возникла ошибка при запросе категорий. Обратитесь в поддержку');
         return false;

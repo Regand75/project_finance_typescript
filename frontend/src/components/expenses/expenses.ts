@@ -34,7 +34,7 @@ export class Expenses {
     private async getExpenses(params: string): Promise<void> {
         try {
             const expensesResult: CategoriesResponseType = await OperationsService.getCategories(`/${params}`);
-            if (expensesResult && (expensesResult as CategorySuccessResponse[]).length > 0) {
+            if (expensesResult) {
                 this.showExpenses(expensesResult as CategorySuccessResponse[]);
             } else {
                 location.href = '#/operations';

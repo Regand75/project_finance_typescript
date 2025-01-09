@@ -256,11 +256,49 @@ export class Router {
         const { routeWithHash } = this.parseHash(); // Получаем текущий маршрут
         const previousRoute: string = this.currentRoute; // Сохраняем предыдущий маршрут
         this.currentRoute = routeWithHash; // Обновляем текущий маршрут
+
         // Находим объект маршрута для предыдущего
         const previousRouteObject: RouteType | undefined = this.routes.find(route => route.route === previousRoute);
-        if (previousRouteObject) {
-            if (previousRouteObject.styles && previousRouteObject.styles.length > 0) {
-                // находим и удаляем старые стили
+
+        // Находим новый маршрут
+        const newRoute: RouteType | undefined = this.routes.find((item: RouteType): boolean => {
+            return item.route === routeWithHash;
+        });
+
+        if (!newRoute) {
+            location.href = '#/login';
+            console.log('No route found');
+            return;
+        }
+
+        // Устанавливаем заголовок страницы
+        if (newRoute.title && this.titlePageElement) {
+            this.titlePageElement.innerText = newRoute.title;
+        }
+
+        // Плавно скрываем контент
+        if (this.contentPageElement) {
+            this.contentPageElement.style.opacity = '0';
+        }
+
+        // Загружаем стили нового маршрута
+        if (newRoute.styles && newRoute.styles.length > 0) {
+            // Предварительная загрузка всех новых стилей
+            const preloadPromises = newRoute.styles.map((style: string) => {
+                return new Promise<void>((resolve) => {
+                    const link: HTMLLinkElement = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = `/styles/${style}`;
+                    link.onload = () => resolve();
+                    document.head.appendChild(link);
+                });
+            });
+
+            // Ожидаем загрузки всех новых стилей
+            await Promise.all(preloadPromises);
+
+            // Удаляем старые стили
+            if (previousRouteObject && previousRouteObject.styles) {
                 previousRouteObject.styles.forEach((style: string): void => {
                     const linkElement: HTMLElement | null = document.querySelector(`link[href='/styles/${style}']`);
                     if (linkElement) {
@@ -270,77 +308,62 @@ export class Router {
             }
         }
 
-        const newRoute: RouteType | undefined = this.routes.find((item: RouteType): boolean => {
-            // const {routeWithHash}: string = this.parseHash(); //получаем маршрут без параметров
-            return item.route === routeWithHash;
-        });
+        // Обновляем содержимое страницы
+        if (newRoute.template) {
+            let contentBlock: HTMLElement | null = this.contentPageElement;
 
-        if (newRoute) {
-            if (newRoute.title && this.titlePageElement) {
-                this.titlePageElement.innerText = newRoute.title;
-            }
-
-            if (newRoute.styles && newRoute.styles.length > 0) {
-                newRoute.styles.forEach((style: string): void => {
-                    const link: HTMLLinkElement = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = `/styles/${style}`;
-                    document.head.appendChild(link);
-                });
-            }
-
-            if (newRoute.template) {
-                let contentBlock: HTMLElement | null = this.contentPageElement;
+            if (newRoute.useLayout) {
                 if (this.contentPageElement) {
-                    this.contentPageElement.classList.remove('content-center-auth');
+                    this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
                 }
 
-                if (newRoute.useLayout) {
-                    if (this.contentPageElement) {
-                        this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
-                    }
+                contentBlock = document.getElementById('content-layout');
+                const profileUserElement: HTMLElement | null = document.getElementById('profile-user');
+                const userInfo: UserInfoType | null = AuthUtils.getUserInfo();
 
-                    contentBlock = document.getElementById('content-layout');
-                    const profileUserElement: HTMLElement | null = document.getElementById('profile-user');
-                    const userInfo: UserInfoType | null = AuthUtils.getUserInfo();
-
-                    if (profileUserElement) {
-                        if (userInfo && userInfo.name && userInfo.lastName) {
-                            profileUserElement.innerText = `${userInfo.name} ${userInfo.lastName}`;
-                        }
-                    }
-
-                    this.burgerElement = document.getElementById("burger");
-                    this.sidebarElement = document.getElementById("sidebar");
-                    this.toggleElement = document.getElementById('toggle');
-                    this.activeBlockElement = document.getElementById('active-block');
-                    this.listElement = document.getElementById('dashboard-collapse');
-                    this.collapsedSvgElement = document.getElementById('collapsed-svg');
-                    const userIconElement: HTMLElement | null = document.getElementById("user-icon");
-                    this.dropdownMenuElement = document.getElementById("dropdown-menu");
-                    if (userIconElement) {
-                        userIconElement.addEventListener('click', this.showLogout.bind(this));
-                    }
-                    if (this.burgerElement) {
-                        this.burgerElement.addEventListener('click', this.showSidebar.bind(this));
-                    }
-
-                    this.activateMenuItem(newRoute);
-                } else {
-                    if (this.contentPageElement) {
-                        this.contentPageElement.classList.add('content-center-auth');
+                if (profileUserElement) {
+                    if (userInfo && userInfo.name && userInfo.lastName) {
+                        profileUserElement.innerText = `${userInfo.name} ${userInfo.lastName}`;
                     }
                 }
-                if (contentBlock) {
-                    contentBlock.innerHTML = await fetch(newRoute.template).then(response => response.text());
+
+                this.burgerElement = document.getElementById("burger");
+                this.sidebarElement = document.getElementById("sidebar");
+                this.toggleElement = document.getElementById('toggle');
+                this.activeBlockElement = document.getElementById('active-block');
+                this.listElement = document.getElementById('dashboard-collapse');
+                this.collapsedSvgElement = document.getElementById('collapsed-svg');
+                const userIconElement: HTMLElement | null = document.getElementById("user-icon");
+                this.dropdownMenuElement = document.getElementById("dropdown-menu");
+                if (userIconElement) {
+                    userIconElement.addEventListener('click', this.showLogout.bind(this));
+                }
+                if (this.burgerElement) {
+                    this.burgerElement.addEventListener('click', this.showSidebar.bind(this));
+                }
+
+                this.activateMenuItem(newRoute);
+            } else {
+                if (this.contentPageElement) {
+                    this.contentPageElement.classList.add('content-center-auth');
                 }
             }
-            if (newRoute.load && typeof newRoute.load === 'function') {
-                newRoute.load();
+
+            if (contentBlock) {
+                contentBlock.innerHTML = await fetch(newRoute.template).then(response => response.text());
             }
-        } else {
-            location.href = '#/login';
-            console.log('No route found');
+        }
+
+        // Выполняем пользовательскую функцию загрузки, если она есть
+        if (newRoute.load && typeof newRoute.load === 'function') {
+            newRoute.load();
+        }
+
+        // Плавно показываем контент
+        if (this.contentPageElement && this.contentPageElement.style) {
+            setTimeout(() => {
+                this.contentPageElement!.style.opacity = '1';
+            }, 100); // Небольшая задержка для завершения рендера
         }
     }
 

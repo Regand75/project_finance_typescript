@@ -72,9 +72,14 @@ export class OperationCreating {
     private async getCategories(categoryType: string): Promise<void> {
         try {
             const categoriesResult: CategoriesResponseType = await OperationsService.getCategories(`/${categoryType}`);
-            if (categoriesResult && (categoriesResult as CategorySuccessResponse[]).length > 0) {
-                this.showTypeSelects();
-                this.showCategorySelect(categoriesResult as CategorySuccessResponse[]);
+            if (categoriesResult) {
+                if ((categoriesResult as CategorySuccessResponse[]).length > 0) {
+                    this.showTypeSelects();
+                    this.showCategorySelect(categoriesResult as CategorySuccessResponse[]);
+                } else if ((categoriesResult as CategorySuccessResponse[]).length === 0) {
+                    alert('Сначала создайте хотя бы одну категорию');
+                    location.href = `#/${categoryType}s`;
+                }
             } else {
                 location.href = '#/operations';
             }
@@ -86,7 +91,7 @@ export class OperationCreating {
     private async changeCategorySelect(): Promise<void> {
         try {
             const categoriesResult: CategoriesResponseType = await OperationsService.getCategories(`/${(this.typeElement as HTMLSelectElement).value}`);
-            if (categoriesResult && (categoriesResult as CategorySuccessResponse[]).length > 0) {
+            if (categoriesResult) {
                 this.showCategorySelect(categoriesResult as CategorySuccessResponse[]);
             } else {
                 location.href = '#/operations';

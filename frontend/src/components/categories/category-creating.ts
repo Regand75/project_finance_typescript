@@ -18,9 +18,7 @@ export class CategoryCreating {
         if (this.creatingCategoryElement) {
             this.creatingCategoryElement.addEventListener('click', this.creatingCategory.bind(this));
         }
-        if (this.category) {
-            this.category = urlUtils.getUrlHashPart();
-        }
+        this.category = urlUtils.getUrlHashPart();
     }
 
     private activeButton(): void {
@@ -48,7 +46,7 @@ export class CategoryCreating {
             if (operationsResult) {
                 location.href = `#/${this.category}s`;
             } else {
-                location.href = '#/operations';
+                location.href = `#/${this.category}s`;
             }
 
         } catch (error) {

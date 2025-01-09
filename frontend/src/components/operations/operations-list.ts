@@ -46,8 +46,10 @@ export class OperationsList {
     public async getOperations(period: string): Promise<void> {
         try {
             const operationsResult: OperationsResponseType = await OperationsService.getOperations(`?period=${period}`);
-            if (operationsResult && (operationsResult as OperationsSuccessResponse[]).length > 0) {
-                this.showRecords(operationsResult as OperationsSuccessResponse[]);
+            if (operationsResult) {
+                if ((operationsResult as OperationsSuccessResponse[]).length > 0) {
+                    this.showRecords(operationsResult as OperationsSuccessResponse[]);
+                }
             } else {
                 location.href = '#/';
             }

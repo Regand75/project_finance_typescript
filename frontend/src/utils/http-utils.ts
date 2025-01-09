@@ -36,14 +36,18 @@ export class HttpUtils {
             result.status = response.status;
             if (response.status === 401 && retries > 0) {
                 if (!token) {
-                    location.href = '#/login';
+                    if (window.location.hash !== '#/login' && window.location.hash !== '#/signup') {
+                        location.href = '#/login';
+                    }
                     return result;
                 } else {
                     const updateTokenResult: boolean = await AuthUtils.processUnauthorizedResponse();
                     if (updateTokenResult) {
                         return await this.request(url, method, body, retries - 1);
                     } else {
-                        location.href = '#/login';
+                        if (window.location.hash !== '#/login' && window.location.hash !== '#/signup') {
+                            location.href = '#/login';
+                        }
                         return result;
                     }
                 }
