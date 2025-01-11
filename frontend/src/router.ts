@@ -271,7 +271,6 @@ export class Router {
         if (!newRoute) {
             if (window.location.hash !== '#/login') {
                 await AuthUtils.logout(this. previousRouteObject);
-                // this.currentRoute = '#/login';
             }
             console.log('No route found');
             return;
@@ -279,7 +278,6 @@ export class Router {
             if (window.location.hash !== '#/login' && window.location.hash !== '#/signup') {
                 if (!localStorage.getItem('accessToken') || !localStorage.getItem('refreshToken') || !localStorage.getItem('userInfo')) {
                     await AuthUtils.logout(this.previousRouteObject);
-                    // this.currentRoute = '#/login';
                     return;
                 }
             }
