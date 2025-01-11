@@ -1,6 +1,9 @@
 import config from "../config/config";
 import {RefreshResponseType} from "../types/refresh-response.type";
 import {UserInfoType} from "../types/user-info.type";
+import {AuthService} from "../services/auth-service";
+import {CommonUtils} from "./common-utils";
+import {RouteType} from "../types/route.type";
 
 export class AuthUtils {
     static accessTokenKey: string = 'accessToken';
@@ -39,6 +42,23 @@ export class AuthUtils {
             }
         }
         return result;
+    }
+
+    public static async logout(previousRouteObject: RouteType | undefined): Promise<void> {
+        const refreshToken: string | null = localStorage.getItem(this.refreshTokenKey);
+        if (refreshToken) {
+            await AuthService.logOut({
+                refreshToken: refreshToken,
+            });
+            AuthUtils.removeToken();
+            AuthUtils.removeUserInfo();
+            CommonUtils.removeStales(previousRouteObject);
+            window.location.href = '#/login';
+        } else {
+            AuthUtils.removeUserInfo();
+            CommonUtils.removeStales(previousRouteObject);
+            window.location.href = '#/login';
+        }
     }
 
     public static setToken(accessToken: string, refreshToken: string): void {

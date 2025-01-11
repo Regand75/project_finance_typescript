@@ -1,27 +1,17 @@
 import {AuthUtils} from "../../utils/auth-utils";
-import {AuthService} from "../../services/auth-service";
+import {CommonUtils} from "../../utils/common-utils";
+import {RouteType} from "../../types/route.type";
 
 export class Logout {
-    constructor() {
+    constructor(previousRouteObject: RouteType | undefined) {
         if (!localStorage.getItem('accessToken') || !localStorage.getItem('refreshToken')) {
+            if (previousRouteObject) {
+                CommonUtils.removeStales(previousRouteObject);
+            }
+            AuthUtils.removeUserInfo();
             location.href = '#/login';
             return;
         }
-        this.logout().then();
-    }
-
-    private async logout(): Promise<void> {
-        const refreshToken: string | null = localStorage.getItem(AuthUtils.refreshTokenKey);
-        if (refreshToken) {
-            await AuthService.logOut({
-                refreshToken: refreshToken,
-            });
-            AuthUtils.removeToken();
-            AuthUtils.removeUserInfo();
-            window.location.href = '#/login';
-        } else {
-            AuthUtils.removeUserInfo();
-            window.location.href = '#/login';
-        }
+        AuthUtils.logout(previousRouteObject).then();
     }
 }

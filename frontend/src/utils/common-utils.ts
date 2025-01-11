@@ -1,3 +1,5 @@
+import {RouteType} from "../types/route.type";
+
 export class CommonUtils {
 
     // конвертируем дату в формат yyyy-mm-dd
@@ -11,6 +13,17 @@ export class CommonUtils {
         if (backButton) {
             backButton.addEventListener('click', (): void => {
                 window.history.back();
+            });
+        }
+    }
+
+    public static removeStales(previousRouteObject: RouteType | undefined) : void {
+        if (previousRouteObject && previousRouteObject.styles) {
+            previousRouteObject.styles.forEach((style: string): void => {
+                const linkElement: HTMLElement | null = document.querySelector(`link[href='/styles/${style}']`);
+                if (linkElement) {
+                    linkElement.remove();
+                }
             });
         }
     }

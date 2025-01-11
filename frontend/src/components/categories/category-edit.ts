@@ -1,7 +1,11 @@
 import {OperationsService} from "../../services/operations-service";
 import {UrlUtils as urlUtils} from "../../utils/url-utils";
 import {CommonUtils} from "../../utils/common-utils";
-import {CategoryResponseType} from "../../types/categories-response.type";
+import {
+    CategoriesResponseType,
+    CategoryResponseType,
+    CategorySuccessResponse
+} from "../../types/categories-response.type";
 
 export class CategoryEdit {
     readonly params: Record<string, string> | null;
@@ -60,13 +64,23 @@ export class CategoryEdit {
         if ((this.categoryInput as HTMLInputElement).value !== this.categoryOriginalData) {
             if (this.params && 'id' in this.params) {
                 try {
-                    const updateCategoryResult: CategoryResponseType = await OperationsService.updateCategory(`/${this.category}/${this.params.id}`, {
-                        title: (this.categoryInput as HTMLInputElement).value,
-                    });
-                    if (updateCategoryResult) {
-                        location.href = `#/${this.category}s`;
+                    let hasMatchingTitle: boolean = false;
+                    const CategoriesResult: CategoriesResponseType = await OperationsService.getCategories(`/${this.category}`);
+                    if (CategoriesResult && (CategoriesResult as CategorySuccessResponse[]).length > 0) {
+                        hasMatchingTitle = (CategoriesResult as CategorySuccessResponse[]).some((category: CategorySuccessResponse): boolean => category.title === (this.categoryInput as HTMLInputElement).value);
+                    }
+                    if (!hasMatchingTitle) {
+                        const updateCategoryResult: CategoryResponseType = await OperationsService.updateCategory(`/${this.category}/${this.params.id}`, {
+                            title: (this.categoryInput as HTMLInputElement).value,
+                        });
+                        if (updateCategoryResult) {
+                            location.href = `#/${this.category}s`;
+                        } else {
+                            location.href = '#/operations';
+                        }
                     } else {
-                        location.href = '#/operations';
+                        alert('Такая запись уже существует');
+                        location.href = `#/${this.category}s`;
                     }
                 } catch (error) {
                     console.log(error);

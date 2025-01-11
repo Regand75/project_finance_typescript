@@ -13,6 +13,7 @@ import {OperationDelete} from "./components/operations/operation-delete";
 import {Balance} from "./components/balance";
 import {RouteType} from "./types/route.type";
 import {UserInfoType} from "./types/user-info.type";
+import {CommonUtils} from "./utils/common-utils";
 
 export class Router {
     readonly titlePageElement: HTMLElement | null;
@@ -24,7 +25,8 @@ export class Router {
     private dropdownMenuElement: HTMLElement | null = null;
     private listElement: HTMLElement | null;
     private collapsedSvgElement: HTMLElement | null;
-    private currentRoute: string;
+    private currentRoute: string | null = null;
+    private previousRouteObject: RouteType | undefined;
     private routes: RouteType[];
 
     constructor() {
@@ -34,7 +36,6 @@ export class Router {
         this.activeBlockElement = null;
         this.listElement = null;
         this.collapsedSvgElement = null;
-        this.currentRoute = '#/login';
         this.initEvents();
         this.routes = [
             {
@@ -79,7 +80,7 @@ export class Router {
             {
                 route: '#/logout',
                 load: () => {
-                    new Logout();
+                    new Logout(this.previousRouteObject);
                 }
             },
             {
@@ -254,11 +255,13 @@ export class Router {
 
     private async activateRoute(): Promise<void> {
         const { routeWithHash } = this.parseHash(); // Получаем текущий маршрут
-        const previousRoute: string = this.currentRoute; // Сохраняем предыдущий маршрут
+        const previousRoute: string | null = this.currentRoute; // Сохраняем предыдущий маршрут
         this.currentRoute = routeWithHash; // Обновляем текущий маршрут
 
         // Находим объект маршрута для предыдущего
-        const previousRouteObject: RouteType | undefined = this.routes.find(route => route.route === previousRoute);
+        if (previousRoute) {
+            this.previousRouteObject = this.routes.find(route => route.route === previousRoute);
+        }
 
         // Находим новый маршрут
         const newRoute: RouteType | undefined = this.routes.find((item: RouteType): boolean => {
@@ -266,9 +269,20 @@ export class Router {
         });
 
         if (!newRoute) {
-            location.href = '#/login';
+            if (window.location.hash !== '#/login') {
+                await AuthUtils.logout(this. previousRouteObject);
+                // this.currentRoute = '#/login';
+            }
             console.log('No route found');
             return;
+        } else {
+            if (window.location.hash !== '#/login' && window.location.hash !== '#/signup') {
+                if (!localStorage.getItem('accessToken') || !localStorage.getItem('refreshToken') || !localStorage.getItem('userInfo')) {
+                    await AuthUtils.logout(this.previousRouteObject);
+                    // this.currentRoute = '#/login';
+                    return;
+                }
+            }
         }
 
         // Устанавливаем заголовок страницы
@@ -298,8 +312,8 @@ export class Router {
             await Promise.all(preloadPromises);
 
             // Удаляем старые стили
-            if (previousRouteObject && previousRouteObject.styles) {
-                previousRouteObject.styles.forEach((style: string): void => {
+            if (this.previousRouteObject && this.previousRouteObject.styles) {
+                this.previousRouteObject.styles.forEach((style: string): void => {
                     const linkElement: HTMLElement | null = document.querySelector(`link[href='/styles/${style}']`);
                     if (linkElement) {
                         linkElement.remove();
@@ -309,7 +323,7 @@ export class Router {
         }
 
         // Обновляем содержимое страницы
-        if (newRoute.template) {
+        if (newRoute && newRoute.template) {
             let contentBlock: HTMLElement | null = this.contentPageElement;
 
             if (newRoute.useLayout) {
