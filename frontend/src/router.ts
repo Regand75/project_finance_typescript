@@ -241,7 +241,7 @@ export class Router {
         window.addEventListener('popstate', this.activateRoute.bind(this));
     }
 
-    private parseHash(): {routeWithHash: string, params: Record<string, string> | null} {
+    private parseHash(): { routeWithHash: string, params: Record<string, string> | null } {
         const hash: string = window.location.hash; // Получаем hash из адресной строки
         const [routeWithHash, queryString]: [string, string | undefined] = hash.split('?') as [string, string | undefined]; // Разделяем на маршрут и параметры
 
@@ -254,7 +254,7 @@ export class Router {
     }
 
     private async activateRoute(): Promise<void> {
-        const { routeWithHash } = this.parseHash(); // Получаем текущий маршрут
+        const {routeWithHash} = this.parseHash(); // Получаем текущий маршрут
         const previousRoute: string | null = this.currentRoute; // Сохраняем предыдущий маршрут
         this.currentRoute = routeWithHash; // Обновляем текущий маршрут
 
@@ -270,13 +270,13 @@ export class Router {
 
         if (!newRoute) {
             if (window.location.hash !== '#/login') {
-                await AuthUtils.logout(this. previousRouteObject);
+                await AuthUtils.logout(this.previousRouteObject);
             }
             console.log('No route found');
             return;
         } else {
-            if (window.location.hash !== '#/login' && window.location.hash !== '#/signup') {
-                if (!localStorage.getItem('accessToken') || !localStorage.getItem('refreshToken') || !localStorage.getItem('userInfo')) {
+            if (!localStorage.getItem('accessToken') || !localStorage.getItem('refreshToken') || !localStorage.getItem('userInfo')) {
+                if (window.location.hash !== '#/login' && window.location.hash !== '#/signup') {
                     await AuthUtils.logout(this.previousRouteObject);
                     return;
                 }
